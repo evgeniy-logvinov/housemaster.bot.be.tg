@@ -1,0 +1,1 @@
+export type ApartmentResidents = { [key: number]: string[] };
