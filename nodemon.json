@@ -1,0 +1,6 @@
+{
+  "watch": ["src"],
+  "ext": "ts",
+  "exec": "ts-node ./src/bot.ts",
+  "ignore": ["dist/*", "node_modules/*"]
+}
