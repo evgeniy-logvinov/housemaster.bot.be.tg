@@ -2,7 +2,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import dotenv from 'dotenv';
 import { mainKeyboard } from './handlers/keyboard';
 import { handleAddApartment, handleListApartments } from './handlers/apartments';
-import { handleAddMeAsResident, handleAddResidents, handleListResidents } from './handlers/residents';
+import { handleAddMeAsResident, handleRemoveMeAsResident, handleAddResidents, handleListResidents } from './handlers/residents';
 
 // Load environment variables
 dotenv.config();
@@ -31,6 +31,8 @@ bot.on('message', (msg) => {
     handleListApartments(bot, chatId);
   } else if (msg.text === 'Add Me as Resident') {
     handleAddMeAsResident(bot, msg);
+  } else if (msg.text === 'Remove Me as Resident') {
+    handleRemoveMeAsResident(bot, msg); // New handler
   } else if (msg.text === 'Add Residents') {
     handleAddResidents(bot, chatId);
   } else if (msg.text === 'List Residents') {

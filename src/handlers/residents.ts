@@ -87,3 +87,40 @@ export const handleAddResidents = (bot: TelegramBot, chatId: number) => {
     });
   });
 };
+
+export const handleRemoveMeAsResident = (bot: TelegramBot, msg: TelegramBot.Message) => {
+  const chatId = msg.chat.id;
+  const apartments = getApartments();
+
+  if (Object.keys(apartments).length === 0) {
+    bot.sendMessage(chatId, 'No apartments available. Please add an apartment first.', mainKeyboard);
+    return;
+  }
+
+  bot.sendMessage(chatId, 'Enter the apartment number to remove yourself as a resident:');
+  bot.once('message', (response) => {
+    const selectedApartment = parseInt(response.text || '', 10);
+
+    if (isNaN(selectedApartment) || !apartments[selectedApartment]) {
+      bot.sendMessage(chatId, 'Invalid apartment number. Please try again.', mainKeyboard);
+      return;
+    }
+
+    // Determine the user's identifier
+    const userName =
+      msg.from?.username || // Use username if available
+      msg.from?.first_name || // Fallback to first_name
+      msg.contact?.phone_number || // Fallback to phone number (if contact is shared)
+      'Нет имени'; // Default value if nothing is available
+
+    if (!apartments[selectedApartment].includes(userName)) {
+      bot.sendMessage(chatId, `You are not listed as a resident of apartment ${selectedApartment}.`, mainKeyboard);
+      return;
+    }
+
+    // Remove the user from the list of residents
+    apartments[selectedApartment] = apartments[selectedApartment].filter((resident) => resident !== userName);
+
+    bot.sendMessage(chatId, `You (${userName}) have been removed as a resident of apartment ${selectedApartment}.`, mainKeyboard);
+  });
+};

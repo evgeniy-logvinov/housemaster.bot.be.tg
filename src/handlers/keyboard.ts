@@ -4,6 +4,7 @@ export const mainKeyboard = {
       [{ text: 'Add Apartment' }],
       [{ text: 'List Apartments' }],
       [{ text: 'Add Me as Resident' }],
+      [{ text: 'Remove Me as Resident' }], // New button
       [{ text: 'Add Residents' }],
       [{ text: 'List Residents' }],
     ],
