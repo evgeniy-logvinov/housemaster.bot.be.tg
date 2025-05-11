@@ -1,8 +1,8 @@
 import TelegramBot from 'node-telegram-bot-api';
 import dotenv from 'dotenv';
 import { mainKeyboard } from './handlers/keyboard';
-import { handleAddApartment, handleListApartments } from './handlers/apartments';
-import { handleAddMeAsResident, handleRemoveMeAsResident, handleAddResidents, handleListResidents } from './handlers/residents';
+import { handleAddMeAsResident, handleRemoveMeAsResident } from './handlers/residents';
+import { loadBuilding, saveBuilding, getResidentsByApartment } from './data/buildingHelper';
 
 // Load environment variables
 dotenv.config();
@@ -15,6 +15,9 @@ if (!token) {
 
 const bot = new TelegramBot(token, { polling: true });
 
+// Load building data
+let building = loadBuilding();
+
 // Send a welcome message with the main keyboard when the bot starts
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
@@ -25,18 +28,31 @@ bot.onText(/\/start/, (msg) => {
 bot.on('message', (msg) => {
   const chatId = msg.chat.id;
 
-  if (msg.text === 'Add Apartment') {
-    handleAddApartment(bot, chatId);
-  } else if (msg.text === 'List Apartments') {
-    handleListApartments(bot, chatId);
-  } else if (msg.text === 'Add Me as Resident') {
-    handleAddMeAsResident(bot, msg);
+  if (msg.text === 'Add Me as Resident') {
+    handleAddMeAsResident(bot, msg, building, saveBuilding);
   } else if (msg.text === 'Remove Me as Resident') {
-    handleRemoveMeAsResident(bot, msg); // New handler
-  } else if (msg.text === 'Add Residents') {
-    handleAddResidents(bot, chatId);
-  } else if (msg.text === 'List Residents') {
-    handleListResidents(bot, chatId);
+    handleRemoveMeAsResident(bot, msg, building, saveBuilding);
+  } else if (msg.text === 'Get Residents by Apartment') {
+    bot.sendMessage(chatId, 'Enter the apartment number to get the list of residents:');
+    bot.once('message', (response) => {
+      const apartmentNumber = parseInt(response.text || '', 10);
+
+      if (isNaN(apartmentNumber)) {
+        bot.sendMessage(chatId, 'Invalid apartment number. Please enter a valid number.');
+        return;
+      }
+
+      try {
+        const residents = getResidentsByApartment(apartmentNumber);
+        if (residents.length > 0) {
+          bot.sendMessage(chatId, `Residents of apartment ${apartmentNumber}: ${residents.join(', ')}`);
+        } else {
+          bot.sendMessage(chatId, `Apartment ${apartmentNumber} has no residents.`);
+        }
+      } catch (error) {
+        bot.sendMessage(chatId, (error as unknown as Error).message);
+      }
+    });
   }
 });
 

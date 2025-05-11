@@ -1,14 +1,11 @@
 export const mainKeyboard = {
   reply_markup: {
     keyboard: [
-      [{ text: 'Add Apartment' }],
-      [{ text: 'List Apartments' }],
-      [{ text: 'Add Me as Resident' }],
-      [{ text: 'Remove Me as Resident' }], // New button
-      [{ text: 'Add Residents' }],
-      [{ text: 'List Residents' }],
+      [{ text: 'Add Me as Resident' }], // Button to add the current user as a resident
+      [{ text: 'Remove Me as Resident' }], // Button to remove the current user as a resident
+      [{ text: 'Get Residents by Apartment' }] // Button to get residents by apartment number
     ],
     resize_keyboard: true,
-    one_time_keyboard: false,
-  },
+    one_time_keyboard: false
+  }
 };
