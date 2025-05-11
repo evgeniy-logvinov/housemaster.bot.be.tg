@@ -66,6 +66,7 @@ const bot = new TelegramBot(token, { polling: true });
 // });
 
 const apartmentNumbers: number[] = []; // Array to store apartment numbers
+const apartmentResidents: { [key: number]: string[] } = {}; // Object to store residents by apartment number
 
 // Define the main keyboard
 const mainKeyboard = {
@@ -73,6 +74,9 @@ const mainKeyboard = {
     keyboard: [
       [{ text: 'Add Apartment' }], // Button to add an apartment
       [{ text: 'List Apartments' }], // Button to list apartments
+      [{ text: 'Add Me as Resident' }], // Button to add the current user as a resident
+      [{ text: 'Add Residents' }], // Button to add residents
+      [{ text: 'List Residents' }], // Button to list residents
     ],
     resize_keyboard: true,
     one_time_keyboard: false,
@@ -82,7 +86,7 @@ const mainKeyboard = {
 // Send a welcome message with the main keyboard when the bot starts
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
-  bot.sendMessage(chatId, 'Welcome! Use the buttons below to manage apartments.', mainKeyboard);
+  bot.sendMessage(chatId, 'Welcome! Use the buttons below to manage apartments and residents.', mainKeyboard);
 });
 
 // Handle "Add Apartment" button
@@ -119,6 +123,122 @@ bot.on('message', (msg) => {
     } else {
       bot.sendMessage(chatId, 'The apartment list is empty.', mainKeyboard);
     }
+  }
+
+  // Handle "Add Residents" button
+  if (msg.text === 'Add Residents') {
+    if (apartmentNumbers.length === 0) {
+      bot.sendMessage(chatId, 'No apartments available. Please add an apartment first.', mainKeyboard);
+      return;
+    }
+
+    bot.sendMessage(chatId, 'Select an apartment to add residents:', {
+      reply_markup: {
+        keyboard: apartmentNumbers.map((num) => [{ text: num.toString() }]).concat([[{ text: 'Cancel' }]]),
+        resize_keyboard: true,
+        one_time_keyboard: true,
+      },
+    });
+
+    bot.once('message', (response) => {
+      const selectedApartment = parseInt(response.text || '', 10);
+
+      if (response.text === 'Cancel') {
+        bot.sendMessage(chatId, 'Operation canceled.', mainKeyboard);
+        return;
+      }
+
+      if (!apartmentNumbers.includes(selectedApartment)) {
+        bot.sendMessage(chatId, 'Invalid apartment number. Please try again.', mainKeyboard);
+        return;
+      }
+
+      bot.sendMessage(chatId, `Enter the name of the resident for apartment ${selectedApartment}:`, {
+        reply_markup: {
+          keyboard: [[{ text: 'Cancel' }]],
+          resize_keyboard: true,
+          one_time_keyboard: true,
+        },
+      });
+
+      bot.once('message', (residentResponse) => {
+        const residentName = residentResponse.text || '';
+
+        // Check if the input is a valid resident name
+        const invalidCommands = ['Add Apartment', 'List Apartments', 'Add Residents', 'List Residents', 'Cancel'];
+        if (invalidCommands.includes(residentName)) {
+          bot.sendMessage(chatId, 'Invalid name. Please try again.', mainKeyboard);
+          return;
+        }
+
+        if (residentName === 'Cancel') {
+          bot.sendMessage(chatId, 'Operation canceled.', mainKeyboard);
+          return;
+        }
+
+        if (!apartmentResidents[selectedApartment]) {
+          apartmentResidents[selectedApartment] = [];
+        }
+
+        apartmentResidents[selectedApartment].push(residentName);
+        bot.sendMessage(chatId, `Resident "${residentName}" has been added to apartment ${selectedApartment}.`, mainKeyboard);
+      });
+    });
+  }
+
+  // Handle "List Residents" button
+  if (msg.text === 'List Residents') {
+    if (Object.keys(apartmentResidents).length === 0) {
+      bot.sendMessage(chatId, 'No residents have been added yet.', mainKeyboard);
+      return;
+    }
+
+    let residentsList = 'Residents by apartment:\n';
+    for (const [apartment, residents] of Object.entries(apartmentResidents)) {
+      residentsList += `Apartment ${apartment}: ${residents.join(', ')}\n`;
+    }
+
+    bot.sendMessage(chatId, residentsList, mainKeyboard);
+  }
+
+  // Handle "Add Me as Resident" button
+  if (msg.text === 'Add Me as Resident') {
+    if (apartmentNumbers.length === 0) {
+      bot.sendMessage(chatId, 'No apartments available. Please add an apartment first.', mainKeyboard);
+      return;
+    }
+
+    bot.sendMessage(chatId, 'Enter the apartment number to add yourself as a resident:');
+
+    bot.once('message', (response) => {
+      const selectedApartment = parseInt(response.text || '', 10);
+
+      if (isNaN(selectedApartment)) {
+        bot.sendMessage(chatId, 'Invalid input. Please enter a valid apartment number.', mainKeyboard);
+        return;
+      }
+
+      if (!apartmentNumbers.includes(selectedApartment)) {
+        bot.sendMessage(chatId, 'Apartment number not found. Please try again.', mainKeyboard);
+        return;
+      }
+
+      // Use username if available, otherwise fallback to first_name
+      const userName = msg.from?.username || msg.from?.first_name || 'Unknown User';
+
+      if (!apartmentResidents[selectedApartment]) {
+        apartmentResidents[selectedApartment] = [];
+      }
+
+      // Check if the user is already added
+      if (apartmentResidents[selectedApartment].includes(userName)) {
+        bot.sendMessage(chatId, `You are already added as a resident of apartment ${selectedApartment}.`, mainKeyboard);
+        return;
+      }
+
+      apartmentResidents[selectedApartment].push(userName);
+      bot.sendMessage(chatId, `You (@${userName}) have been added as a resident of apartment ${selectedApartment}.`, mainKeyboard);
+    });
   }
 });
 
