@@ -53,6 +53,42 @@ bot.on('message', (msg) => {
         bot.sendMessage(chatId, (error as unknown as Error).message);
       }
     });
+  } else if (msg.text === 'Add Resident') {
+    bot.sendMessage(chatId, 'Enter the apartment number to add a resident:');
+    bot.once('message', (response) => {
+      const apartmentNumber = parseInt(response.text || '', 10);
+
+      if (isNaN(apartmentNumber)) {
+        bot.sendMessage(chatId, 'Invalid apartment number. Please enter a valid number.');
+        return;
+      }
+
+      bot.sendMessage(chatId, 'Enter the name of the resident to add:');
+      bot.once('message', (residentResponse) => {
+        const residentName = residentResponse.text?.trim();
+
+        if (!residentName) {
+          bot.sendMessage(chatId, 'Invalid name. Please try again.');
+          return;
+        }
+
+        try {
+          const building = loadBuilding();
+          for (const floor of Object.values(building)) {
+            if (floor[apartmentNumber]) {
+              floor[apartmentNumber].push(residentName);
+              saveBuilding(building);
+              bot.sendMessage(chatId, `Resident "${residentName}" has been added to apartment ${apartmentNumber}.`);
+              return;
+            }
+          }
+
+          bot.sendMessage(chatId, `Apartment number ${apartmentNumber} not found.`);
+        } catch (error) {
+          bot.sendMessage(chatId, (error as unknown as Error).message);
+        }
+      });
+    });
   }
 });
 
