@@ -4,18 +4,6 @@ import { mainKeyboard } from './keyboard';
 // Centralized storage for apartments and their residents
 const apartments: { [key: number]: string[] } = {}; // Key: apartment number, Value: array of residents
 
-// Building structure
-const building: { [floor: number]: { [apartment: number]: string[] } } = {};
-
-// Initialize the building structure
-for (let floor = 2; floor <= 23; floor++) {
-  building[floor] = {};
-  for (let apartment = 1; apartment <= 6; apartment++) {
-    const apartmentNumber = floor * 100 + apartment; // Generate apartment number (e.g., 201, 202, ..., 2306)
-    building[floor][apartmentNumber] = []; // Initialize with an empty array of residents
-  }
-}
-
 export const handleAddApartment = (bot: TelegramBot, chatId: number) => {
   bot.sendMessage(chatId, 'Enter the apartment number:');
   bot.once('message', (response) => {

@@ -1,0 +1,32 @@
+{
+  "en": {
+    "welcomeMessage": "Welcome! Use the buttons below to manage apartments and residents.",
+    "addMeAsResident": "Add Me as Resident2",
+    "removeMeAsResident": "Remove Me as Resident",
+    "getResidentsByApartment": "Get Residents by Apartment",
+    "addResident": "Add Resident",
+    "enterApartmentNumber": "Enter the apartment number to get the list of residents:",
+    "invalidApartmentNumber": "Invalid apartment number. Please enter a valid number.",
+    "noResidents": "Apartment {apartmentNumber} has no residents.",
+    "residentsList": "Residents of apartment {apartmentNumber}: {residents}",
+    "enterResidentName": "Enter the name of the resident to add:",
+    "residentAdded": "Resident \"{residentName}\" has been added to apartment {apartmentNumber}.",
+    "apartmentNotFound": "Apartment number {apartmentNumber} not found.",
+    "invalidName": "Invalid name. Please try again."
+  },
+  "ru": {
+    "welcomeMessage": "Добро пожаловать! Используйте кнопки ниже для управления квартирами и жильцами.",
+    "addMeAsResident": "Добавить меня как жильца",
+    "removeMeAsResident": "Удалить меня как жильца",
+    "getResidentsByApartment": "Получить жильцов по квартире",
+    "addResident": "Добавить жильца",
+    "enterApartmentNumber": "Введите номер квартиры, чтобы получить список жильцов:",
+    "invalidApartmentNumber": "Неверный номер квартиры. Пожалуйста, введите корректный номер.",
+    "noResidents": "В квартире {apartmentNumber} нет жильцов.",
+    "residentsList": "Жильцы квартиры {apartmentNumber}: {residents}",
+    "enterResidentName": "Введите имя жильца для добавления:",
+    "residentAdded": "Жилец \"{residentName}\" был добавлен в квартиру {apartmentNumber}.",
+    "apartmentNotFound": "Квартира с номером {apartmentNumber} не найдена.",
+    "invalidName": "Неверное имя. Пожалуйста, попробуйте снова."
+  }
+}

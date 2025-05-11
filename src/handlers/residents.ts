@@ -2,8 +2,6 @@ import TelegramBot from 'node-telegram-bot-api';
 import { mainKeyboard } from './keyboard';
 import { getApartments } from './apartments';
 
-const building: { [key: number]: { [key: number]: string[] } } = {};
-
 export const handleAddMeAsResident = (
   bot: TelegramBot,
   msg: TelegramBot.Message,

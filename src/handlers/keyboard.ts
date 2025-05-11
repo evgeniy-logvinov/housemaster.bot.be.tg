@@ -1,10 +1,15 @@
+import translations from '../data/translations.json';
+
+const language = (process.env.LANGUAGE as unknown as 'en' | 'ru') || 'en'; // Default to English if LANGUAGE is not set
+const t = translations[language]; // Select translations based on the language
+
 export const mainKeyboard = {
   reply_markup: {
     keyboard: [
-      [{ text: 'Add Me as Resident' }], // Button to add the current user as a resident
-      [{ text: 'Remove Me as Resident' }], // Button to remove the current user as a resident
-      [{ text: 'Get Residents by Apartment' }], // Button to get residents by apartment number
-      [{ text: 'Add Resident' }] // Button to add another user as a resident
+      [{ text: t.addMeAsResident }], // Button to add the current user as a resident
+      [{ text: t.removeMeAsResident }], // Button to remove the current user as a resident
+      [{ text: t.getResidentsByApartment }], // Button to get residents by apartment number
+      [{ text: t.addResident }], // Button to add another user as a resident
     ],
     resize_keyboard: true,
     one_time_keyboard: false
