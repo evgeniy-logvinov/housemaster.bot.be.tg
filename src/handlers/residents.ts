@@ -1,6 +1,8 @@
 import TelegramBot from 'node-telegram-bot-api';
-import { mainKeyboard } from './keyboard';
-import { getApartments } from './apartments';
+import translationsData from '../data/translations.json';
+
+const language = (process.env.LANGUAGE as unknown as 'en' | 'ru') || 'en';
+const translations = translationsData[language];
 
 export const handleAddMeAsResident = (
   bot: TelegramBot,
@@ -8,83 +10,48 @@ export const handleAddMeAsResident = (
   building: { [floor: number]: { [apartment: number]: string[] } },
   saveBuilding: (building: { [floor: number]: { [apartment: number]: string[] } }) => void
 ) => {
-  const chatId = msg.chat.id;
-
-  bot.sendMessage(chatId, 'Enter the apartment number to add yourself as a resident:');
+  bot.sendMessage(msg.chat.id, translations.enterApartmentNumber);
   bot.once('message', (response) => {
-    const selectedApartment = parseInt(response.text || '', 10);
+    const apartmentNumber = parseInt(response.text || '', 10);
 
-    // Find the floor and apartment
-    const floor = Object.keys(building).find((floor) =>
-      Object.keys(building[parseInt(floor)]).includes(selectedApartment.toString())
-    );
-
-    if (!floor) {
-      bot.sendMessage(chatId, 'Invalid apartment number. Please try again.', mainKeyboard);
+    if (isNaN(apartmentNumber)) {
+      bot.sendMessage(msg.chat.id, translations.invalidApartmentNumber);
       return;
     }
 
-    // Determine the user's identifier
-    const userName =
-      msg.from?.username || msg.from?.first_name || msg.contact?.phone_number || 'Нет имени';
+    const userName = msg.from?.username || msg.from?.first_name || 'Unknown User';
 
-    if (building[parseInt(floor)][selectedApartment].includes(userName)) {
-      bot.sendMessage(chatId, `You are already added as a resident of apartment ${selectedApartment}.`, mainKeyboard);
-      return;
-    }
+    for (const [floor, apartments] of Object.entries(building)) {
+      if (apartments[apartmentNumber]) {
+        if (apartments[apartmentNumber].includes(userName)) {
+          bot.sendMessage(
+            msg.chat.id,
+            translations.alreadyResident
+              .replace('{apartmentNumber}', apartmentNumber.toString())
+              .replace('{floor}', floor)
+          );
+          return;
+        }
 
-    building[parseInt(floor)][selectedApartment].push(userName);
-    saveBuilding(building); // Save changes to file
-
-    bot.sendMessage(chatId, `You (${userName}) have been added as a resident of apartment ${selectedApartment}.`, mainKeyboard);
-  });
-};
-
-export const handleListResidents = (
-  bot: TelegramBot,
-  chatId: number,
-  building: { [floor: number]: { [apartment: number]: string[] } }
-) => {
-  let residentsList = 'Residents by floor and apartment:\n';
-
-  for (const [floor, apartments] of Object.entries(building)) {
-    residentsList += `Floor ${floor}:\n`;
-    for (const [apartment, residents] of Object.entries(apartments)) {
-      residentsList += `  Apartment ${apartment}: ${residents.join(', ') || 'No residents'}\n`;
-    }
-  }
-
-  bot.sendMessage(chatId, residentsList, mainKeyboard);
-};
-
-export const handleAddResidents = (bot: TelegramBot, chatId: number) => {
-  const apartments = getApartments();
-
-  if (Object.keys(apartments).length === 0) {
-    bot.sendMessage(chatId, 'No apartments available. Please add an apartment first.', mainKeyboard);
-    return;
-  }
-
-  bot.sendMessage(chatId, 'Enter the apartment number to add residents:');
-  bot.once('message', (response) => {
-    const selectedApartment = parseInt(response.text || '', 10);
-
-    if (isNaN(selectedApartment) || !apartments[selectedApartment]) {
-      bot.sendMessage(chatId, 'Invalid apartment number. Please try again.', mainKeyboard);
-      return;
-    }
-
-    bot.sendMessage(chatId, `Enter the name of the resident for apartment ${selectedApartment}:`);
-    bot.once('message', (residentResponse) => {
-      const residentName = residentResponse.text || '';
-
-      if (!apartments[selectedApartment]) {
-        apartments[selectedApartment] = [];
+        apartments[apartmentNumber].push(userName);
+        saveBuilding(building);
+        bot.sendMessage(
+          msg.chat.id,
+          translations.residentAdded
+            .replace('{residentName}', userName)
+            .replace('{apartmentNumber}', apartmentNumber.toString())
+            .replace('{floor}', floor)
+        );
+        return;
       }
+    }
 
-      apartments[selectedApartment].push(residentName);
-      bot.sendMessage(chatId, `Resident "${residentName}" has been added to apartment ${selectedApartment}.`, mainKeyboard);
-    });
+    bot.sendMessage(
+      msg.chat.id,
+      translations.apartmentNotFound
+        .replace('{apartmentNumber}', apartmentNumber.toString())
+        .replace('{floor}', 'unknown')
+    );
   });
 };
 
@@ -94,37 +61,40 @@ export const handleRemoveMeAsResident = (
   building: { [floor: number]: { [apartment: number]: string[] } },
   saveBuilding: (building: { [floor: number]: { [apartment: number]: string[] } }) => void
 ) => {
-  const chatId = msg.chat.id;
-
-  bot.sendMessage(chatId, 'Enter the apartment number to remove yourself as a resident:');
+  bot.sendMessage(msg.chat.id, translations.enterApartmentNumber);
   bot.once('message', (response) => {
     const selectedApartment = parseInt(response.text || '', 10);
 
-    // Find the floor and apartment
-    const floor = Object.keys(building).find((floor) =>
-      Object.keys(building[parseInt(floor)]).includes(selectedApartment.toString())
-    );
-
-    if (!floor) {
-      bot.sendMessage(chatId, 'Invalid apartment number. Please try again.', mainKeyboard);
+    if (isNaN(selectedApartment)) {
+      bot.sendMessage(msg.chat.id, translations.invalidApartmentNumber);
       return;
     }
 
-    // Determine the user's identifier
-    const userName =
-      msg.from?.username || msg.from?.first_name || msg.contact?.phone_number || 'Нет имени';
+    const userName = msg.from?.username || msg.from?.first_name || 'Unknown User';
 
-    if (!building[parseInt(floor)][selectedApartment].includes(userName)) {
-      bot.sendMessage(chatId, `You are not listed as a resident of apartment ${selectedApartment}.`, mainKeyboard);
-      return;
+    for (const [floor, apartments] of Object.entries(building)) {
+      if (apartments[selectedApartment]) {
+        if (!apartments[selectedApartment].includes(userName)) {
+          bot.sendMessage(
+            msg.chat.id,
+            translations.notResident.replace('{apartmentNumber}', selectedApartment.toString()).replace('{floor}', floor)
+          );
+          return;
+        }
+
+        apartments[selectedApartment] = apartments[selectedApartment].filter((resident) => resident !== userName);
+        saveBuilding(building);
+        bot.sendMessage(
+          msg.chat.id,
+          translations.residentRemoved
+            .replace('{residentName}', userName)
+            .replace('{apartmentNumber}', selectedApartment.toString())
+            .replace('{floor}', floor)
+        );
+        return;
+      }
     }
 
-    // Remove the user from the list of residents
-    building[parseInt(floor)][selectedApartment] = building[parseInt(floor)][selectedApartment].filter(
-      (resident) => resident !== userName
-    );
-    saveBuilding(building); // Save changes to file
-
-    bot.sendMessage(chatId, `You (${userName}) have been removed as a resident of apartment ${selectedApartment}.`, mainKeyboard);
+    bot.sendMessage(msg.chat.id, translations.apartmentNotFound.replace('{apartmentNumber}', selectedApartment.toString()));
   });
 };
