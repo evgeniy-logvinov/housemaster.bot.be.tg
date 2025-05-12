@@ -19,7 +19,8 @@
     "emptyApartmentList": "The apartment list is empty.",
     "alreadyResident": "You are already a resident of apartment {apartmentNumber} on floor {floor}.",
     "notResident": "You are not a resident of apartment {apartmentNumber} on floor {floor}.",
-    "residentRemoved": "Resident \"{residentName}\" has been removed from apartment {apartmentNumber} on floor {floor}."
+    "residentRemoved": "Resident \"{residentName}\" has been removed from apartment {apartmentNumber} on floor {floor}.",
+    "cancel": "Cancel"
   },
   "ru": {
     "welcomeMessage": "Добро пожаловать! Используйте кнопки ниже для управления квартирами и жильцами.",
@@ -41,6 +42,7 @@
     "emptyApartmentList": "Список квартир пуст.",
     "alreadyResident": "Вы уже являетесь жильцом квартиры {apartmentNumber} на этаже {floor}.",
     "notResident": "Вы не являетесь жильцом квартиры {apartmentNumber} на этаже {floor}.",
-    "residentRemoved": "Жилец \"{residentName}\" был удален из квартиры {apartmentNumber} на этаже {floor}."
+    "residentRemoved": "Жилец \"{residentName}\" был удален из квартиры {apartmentNumber} на этаже {floor}.",
+    "cancel": "Отмена"
   }
 }

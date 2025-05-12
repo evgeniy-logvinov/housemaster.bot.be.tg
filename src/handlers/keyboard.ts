@@ -15,3 +15,11 @@ export const mainKeyboard = {
     one_time_keyboard: false
   }
 };
+
+export const cancelKeyboard = {
+  reply_markup: {
+    keyboard: [[{ text: t.cancel }]],
+    resize_keyboard: true,
+    one_time_keyboard: true,
+  },
+};
