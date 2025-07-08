@@ -5,7 +5,7 @@ dotenv.config();
 import TelegramBot from 'node-telegram-bot-api';
 import { mainKeyboard } from './handlers/keyboard';
 import translationsData from './data/translations.json'; // Import translations
-import { handleAddMeAsResident, handleRemoveMeAsResident, handleAddResident, handleGetResidentsByApartment, handleRemoveResidentByName, handleAddPhoneNumber } from './handlers/residents';
+import { handleAddMeAsResident, handleRemoveMeAsResident, handleAddResident, handleGetResidentsByApartment, handleRemoveResidentByName, handleAddPhoneNumber, handleRemovePhoneNumber } from './handlers/residents';
 
 // Load environment variables
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -47,6 +47,8 @@ bot.on('message', (msg) => {
     handleRemoveResidentByName(bot, msg);
   } else if (msg.text === translations.addPhoneNumber) {
     handleAddPhoneNumber(bot, msg);
+  } else if (msg.text === translations.removePhoneNumber) {
+    handleRemovePhoneNumber(bot, msg);
   }
 });
 

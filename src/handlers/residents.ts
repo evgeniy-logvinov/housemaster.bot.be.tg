@@ -340,3 +340,63 @@ export const handleRemoveResidentByName = (bot: TelegramBot, msg: TelegramBot.Me
     });
   });
 };
+
+export const handleRemovePhoneNumber = (bot: TelegramBot, msg: TelegramBot.Message) => {
+  const building = loadBuilding();
+  askApartmentNumber(bot, msg, (apartmentNumber) => {
+    bot.sendMessage(msg.chat.id, translations.enterPhoneNumberToRemove, cancelKeyboard);
+
+    const listener = (response: TelegramBot.Message) => {
+      if (response.text === translations.cancel) {
+        bot.sendMessage(msg.chat.id, translations.welcomeMessage, mainKeyboard);
+        return;
+      }
+
+      const phone = response.text?.trim();
+      if (!phone) {
+        bot.sendMessage(msg.chat.id, translations.invalidPhoneNumber, cancelKeyboard);
+        return;
+      }
+
+      for (const [floor, apartments] of Object.entries(building)) {
+        const flat = apartments[apartmentNumber];
+        if (flat) {
+          const index = flat.numbers.indexOf(phone);
+          if (index !== -1) {
+            flat.numbers.splice(index, 1);
+            saveBuilding(building);
+            bot.sendMessage(
+              msg.chat.id,
+              translations.phoneNumberRemoved
+                .replace('{phone}', phone)
+                .replace('{apartmentNumber}', apartmentNumber.toString())
+                .replace('{floor}', floor),
+              mainKeyboard
+            );
+            return;
+          } else {
+            bot.sendMessage(
+              msg.chat.id,
+              translations.phoneNumberNotFound
+                .replace('{phone}', phone)
+                .replace('{apartmentNumber}', apartmentNumber.toString())
+                .replace('{floor}', floor),
+              mainKeyboard
+            );
+            return;
+          }
+        }
+      }
+
+      bot.sendMessage(
+        msg.chat.id,
+        translations.apartmentNotFound
+          .replace('{apartmentNumber}', apartmentNumber.toString())
+          .replace('{floor}', 'unknown'),
+        mainKeyboard
+      );
+    };
+
+    bot.once('message', listener);
+  });
+};
