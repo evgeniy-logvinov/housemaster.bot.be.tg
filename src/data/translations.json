@@ -21,7 +21,11 @@
     "notResident": "You are not a resident of apartment {apartmentNumber} on floor {floor}.",
     "residentRemoved": "Resident \"{residentName}\" has been removed from apartment {apartmentNumber} on floor {floor}.",
     "removeResidentByName": "Remove Resident by Name",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "addPhoneNumber": "Add Phone Number",
+    "enterPhoneNumber": "Enter the phone number:",
+    "phoneNumberAdded": "Phone number \"{phone}\" has been added to apartment {apartmentNumber} on floor {floor}.",
+    "invalidPhoneNumber": "Please enter a valid phone number."
   },
   "ru": {
     "welcomeMessage": "Добро пожаловать! Используйте кнопки ниже для управления квартирами и жильцами.",
@@ -45,6 +49,10 @@
     "notResident": "Вы не являетесь жильцом квартиры {apartmentNumber} на этаже {floor}.",
     "residentRemoved": "Жилец \"{residentName}\" был удален из квартиры {apartmentNumber} на этаже {floor}.",
     "removeResidentByName": "Удалить жильца по имени",
-    "cancel": "Отмена"
+    "cancel": "Отмена",
+    "addPhoneNumber": "Добавить номер телефона",
+    "enterPhoneNumber": "Введите номер телефона:",
+    "phoneNumberAdded": "Номер телефона \"{phone}\" был добавлен в квартиру {apartmentNumber} на этаже {floor}.",
+    "invalidPhoneNumber": "Пожалуйста, введите корректный номер телефона."
   }
 }

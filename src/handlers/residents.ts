@@ -213,35 +213,49 @@ export const handleAddResident = (bot: TelegramBot, msg: TelegramBot.Message) =>
 };
 
 export const handleAddPhoneNumber = (bot: TelegramBot, msg: TelegramBot.Message) => {
+  const building = loadBuilding();
   askApartmentNumber(bot, msg, (apartmentNumber) => {
-    askPhoneNumber(bot, msg, (phone) => {
-      try {
-        const building = loadBuilding();
-        for (const [floorKey, apartments] of Object.entries(building)) {
-          const flat = apartments[apartmentNumber];
-          if (flat) {
-            flat.numbers.push(phone);
-            saveBuilding(building);
-            bot.sendMessage(
-              msg.chat.id,
-              `Phone number "${phone}" has been added to apartment ${apartmentNumber} on floor ${floorKey}.`,
-              mainKeyboard
-            );
-            return;
-          }
-        }
+    bot.sendMessage(msg.chat.id, translations.enterPhoneNumber, cancelKeyboard);
 
-        bot.sendMessage(
-          msg.chat.id,
-          translations.apartmentNotFound
-            .replace('{apartmentNumber}', apartmentNumber.toString())
-            .replace('{floor}', 'unknown'),
-          mainKeyboard
-        );
-      } catch (error) {
-        bot.sendMessage(msg.chat.id, translations.apartmentNotFound.replace('{apartmentNumber}', apartmentNumber.toString()), mainKeyboard);
+    const listener = (response: TelegramBot.Message) => {
+      if (response.text === translations.cancel) {
+        bot.sendMessage(msg.chat.id, translations.welcomeMessage, mainKeyboard);
+        return;
       }
-    });
+
+      const phone = response.text?.trim();
+      if (!phone) {
+        bot.sendMessage(msg.chat.id, translations.invalidPhoneNumber, cancelKeyboard);
+        return;
+      }
+
+      for (const [floor, apartments] of Object.entries(building)) {
+        const flat = apartments[apartmentNumber];
+        if (flat) {
+          flat.numbers.push(phone);
+          saveBuilding(building);
+          bot.sendMessage(
+            msg.chat.id,
+            translations.phoneNumberAdded
+              .replace('{phone}', phone)
+              .replace('{apartmentNumber}', apartmentNumber.toString())
+              .replace('{floor}', floor),
+            mainKeyboard
+          );
+          return;
+        }
+      }
+
+      bot.sendMessage(
+        msg.chat.id,
+        translations.apartmentNotFound
+          .replace('{apartmentNumber}', apartmentNumber.toString())
+          .replace('{floor}', 'unknown'),
+        mainKeyboard
+      );
+    };
+
+    bot.once('message', listener);
   });
 };
 
