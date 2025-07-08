@@ -63,6 +63,33 @@ function askResidentName(
   bot.once('message', listener);
 }
 
+function askPhoneNumber(
+  bot: TelegramBot,
+  msg: TelegramBot.Message,
+  onValid: (phone: string) => void,
+  onCancel?: () => void
+) {
+  bot.sendMessage(msg.chat.id, 'Enter a phone number (or send "Cancel" to abort):', cancelKeyboard);
+
+  const listener = (response: TelegramBot.Message) => {
+    if (response.text === translations.cancel) {
+      bot.sendMessage(msg.chat.id, translations.welcomeMessage, mainKeyboard);
+      onCancel?.();
+      return;
+    }
+
+    const phone = response.text?.trim();
+    if (!phone) {
+      bot.sendMessage(msg.chat.id, 'Please enter a valid phone number.', cancelKeyboard);
+      return;
+    }
+
+    onValid(phone);
+  };
+
+  bot.once('message', listener);
+}
+
 // --- Main handlers ---
 
 export const handleAddMeAsResident = (bot: TelegramBot, msg: TelegramBot.Message) => {
@@ -71,8 +98,9 @@ export const handleAddMeAsResident = (bot: TelegramBot, msg: TelegramBot.Message
     const userName = msg.from?.username || msg.from?.first_name || 'Unknown User';
 
     for (const [floor, apartments] of Object.entries(building)) {
-      if (apartments[apartmentNumber]) {
-        if (apartments[apartmentNumber].includes(userName)) {
+      const flat = apartments[apartmentNumber];
+      if (flat) {
+        if (flat.residents.includes(userName)) {
           bot.sendMessage(
             msg.chat.id,
             translations.alreadyResident
@@ -83,7 +111,7 @@ export const handleAddMeAsResident = (bot: TelegramBot, msg: TelegramBot.Message
           return;
         }
 
-        apartments[apartmentNumber].push(userName);
+        flat.residents.push(userName);
         saveBuilding(building);
         bot.sendMessage(
           msg.chat.id,
@@ -113,8 +141,9 @@ export const handleRemoveMeAsResident = (bot: TelegramBot, msg: TelegramBot.Mess
     const userName = msg.from?.username || msg.from?.first_name || 'Unknown User';
 
     for (const [floor, apartments] of Object.entries(building)) {
-      if (apartments[selectedApartment]) {
-        if (!apartments[selectedApartment].includes(userName)) {
+      const flat = apartments[selectedApartment];
+      if (flat) {
+        if (!flat.residents.includes(userName)) {
           bot.sendMessage(
             msg.chat.id,
             translations.notResident
@@ -125,7 +154,7 @@ export const handleRemoveMeAsResident = (bot: TelegramBot, msg: TelegramBot.Mess
           return;
         }
 
-        apartments[selectedApartment] = apartments[selectedApartment].filter((resident) => resident !== userName);
+        flat.residents = flat.residents.filter((resident: string) => resident !== userName);
         saveBuilding(building);
         bot.sendMessage(
           msg.chat.id,
@@ -153,8 +182,9 @@ export const handleAddResident = (bot: TelegramBot, msg: TelegramBot.Message) =>
       try {
         const building = loadBuilding();
         for (const [floorKey, apartments] of Object.entries(building)) {
-          if (apartments[apartmentNumber]) {
-            apartments[apartmentNumber].push(residentName);
+          const flat = apartments[apartmentNumber];
+          if (flat) {
+            flat.residents.push(residentName);
             saveBuilding(building);
             bot.sendMessage(
               msg.chat.id,
@@ -182,36 +212,65 @@ export const handleAddResident = (bot: TelegramBot, msg: TelegramBot.Message) =>
   });
 };
 
+export const handleAddPhoneNumber = (bot: TelegramBot, msg: TelegramBot.Message) => {
+  askApartmentNumber(bot, msg, (apartmentNumber) => {
+    askPhoneNumber(bot, msg, (phone) => {
+      try {
+        const building = loadBuilding();
+        for (const [floorKey, apartments] of Object.entries(building)) {
+          const flat = apartments[apartmentNumber];
+          if (flat) {
+            flat.numbers.push(phone);
+            saveBuilding(building);
+            bot.sendMessage(
+              msg.chat.id,
+              `Phone number "${phone}" has been added to apartment ${apartmentNumber} on floor ${floorKey}.`,
+              mainKeyboard
+            );
+            return;
+          }
+        }
+
+        bot.sendMessage(
+          msg.chat.id,
+          translations.apartmentNotFound
+            .replace('{apartmentNumber}', apartmentNumber.toString())
+            .replace('{floor}', 'unknown'),
+          mainKeyboard
+        );
+      } catch (error) {
+        bot.sendMessage(msg.chat.id, translations.apartmentNotFound.replace('{apartmentNumber}', apartmentNumber.toString()), mainKeyboard);
+      }
+    });
+  });
+};
+
 export const handleGetResidentsByApartment = (bot: TelegramBot, msg: TelegramBot.Message) => {
   const building = loadBuilding();
   askApartmentNumber(bot, msg, (apartmentNumber) => {
     try {
       let residents: string[] = [];
+      let numbers: string[] = [];
       let floor: string | undefined;
 
       for (const [floorKey, apartments] of Object.entries(building)) {
-        if (apartments[apartmentNumber]) {
-          residents = apartments[apartmentNumber];
+        const flat = apartments[apartmentNumber];
+        if (flat) {
+          residents = flat.residents;
+          numbers = flat.numbers;
           floor = floorKey;
           break;
         }
       }
 
-      if (residents.length > 0 && floor) {
+      if (floor) {
         bot.sendMessage(
           msg.chat.id,
-          translations.residentsList
+          `${translations.residentsList
             .replace('{apartmentNumber}', apartmentNumber.toString())
             .replace('{floor}', floor)
-            .replace('{residents}', residents.join(', ')),
-          mainKeyboard
-        );
-      } else if (floor) {
-        bot.sendMessage(
-          msg.chat.id,
-          translations.noResidents
-            .replace('{apartmentNumber}', apartmentNumber.toString())
-            .replace('{floor}', floor),
+            .replace('{residents}', residents.length ? residents.join(', ') : '—')}
+\nPhone numbers: ${numbers.length ? numbers.join(', ') : '—'}`,
           mainKeyboard
         );
       } else {
@@ -229,19 +288,17 @@ export const handleGetResidentsByApartment = (bot: TelegramBot, msg: TelegramBot
   });
 };
 
-// New handler: remove resident by name
 export const handleRemoveResidentByName = (bot: TelegramBot, msg: TelegramBot.Message) => {
   const building = loadBuilding();
   askApartmentNumber(bot, msg, (apartmentNumber) => {
     askResidentName(bot, msg, (residentName) => {
       let found = false;
       for (const [floorKey, apartments] of Object.entries(building)) {
-        if (apartments[apartmentNumber]) {
-          const before = apartments[apartmentNumber].length;
-          apartments[apartmentNumber] = apartments[apartmentNumber].filter(
-            (resident) => resident !== residentName
-          );
-          if (apartments[apartmentNumber].length < before) {
+        const flat = apartments[apartmentNumber];
+        if (flat) {
+          const before = flat.residents.length;
+          flat.residents = flat.residents.filter((resident: string) => resident !== residentName);
+          if (flat.residents.length < before) {
             found = true;
             saveBuilding(building);
             bot.sendMessage(

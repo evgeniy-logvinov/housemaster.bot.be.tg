@@ -1,10 +1,11 @@
 import fs from 'fs';
 import path from 'path';
+import { Building } from '../types';
 
 const buildingFilePath = path.join(__dirname, 'building.json');
 
 // Load building data from JSON file
-export const loadBuilding = (): { [floor: number]: { [apartment: number]: string[] } } => {
+export const loadBuilding = (): Building => {
   if (!fs.existsSync(buildingFilePath)) {
     throw new Error(`Building file not found at ${buildingFilePath}`);
   }
@@ -13,7 +14,7 @@ export const loadBuilding = (): { [floor: number]: { [apartment: number]: string
 };
 
 // Save building data to JSON file
-export const saveBuilding = (building: { [floor: number]: { [apartment: number]: string[] } }) => {
+export const saveBuilding = (building: Building) => {
   fs.writeFileSync(buildingFilePath, JSON.stringify(building, null, 2), 'utf-8');
 };
 
@@ -23,7 +24,20 @@ export const getResidentsByApartment = (apartmentNumber: number): string[] => {
 
   for (const floor of Object.values(building)) {
     if (floor[apartmentNumber]) {
-      return floor[apartmentNumber];
+      return floor[apartmentNumber].residents;
+    }
+  }
+
+  throw new Error(`Apartment number ${apartmentNumber} not found.`);
+};
+
+// Get phone numbers by apartment number
+export const getNumbersByApartment = (apartmentNumber: number): string[] => {
+  const building = loadBuilding();
+
+  for (const floor of Object.values(building)) {
+    if (floor[apartmentNumber]) {
+      return floor[apartmentNumber].numbers;
     }
   }
 
