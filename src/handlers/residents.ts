@@ -1,6 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import translationsData from '../data/translations.json';
 import { mainKeyboard, cancelKeyboard } from '../handlers/keyboard';
+import { loadBuilding, saveBuilding } from '../data/buildingHelper';
 
 const language = (process.env.LANGUAGE as unknown as 'en' | 'ru') || 'en';
 const translations = translationsData[language];
@@ -8,10 +9,9 @@ const translations = translationsData[language];
 export const handleAddMeAsResident = (
   bot: TelegramBot,
   msg: TelegramBot.Message,
-  building: { [floor: number]: { [apartment: number]: string[] } },
-  saveBuilding: (building: { [floor: number]: { [apartment: number]: string[] } }) => void
 ) => {
   bot.sendMessage(msg.chat.id, translations.enterApartmentNumber, cancelKeyboard);
+  const building = loadBuilding();
 
   const listener = (response: TelegramBot.Message) => {
     if (response.text === translations.cancel) {
@@ -70,10 +70,9 @@ export const handleAddMeAsResident = (
 export const handleRemoveMeAsResident = (
   bot: TelegramBot,
   msg: TelegramBot.Message,
-  building: { [floor: number]: { [apartment: number]: string[] } },
-  saveBuilding: (building: { [floor: number]: { [apartment: number]: string[] } }) => void
 ) => {
   bot.sendMessage(msg.chat.id, translations.enterApartmentNumber, cancelKeyboard);
+  const building = loadBuilding();
 
   const listener = (response: TelegramBot.Message) => {
     if (response.text === translations.cancel) {
@@ -122,6 +121,142 @@ export const handleRemoveMeAsResident = (
       translations.apartmentNotFound.replace('{apartmentNumber}', selectedApartment.toString()),
       mainKeyboard
     );
+  };
+
+  bot.once('message', listener);
+};
+
+export const handleAddResident = (
+  bot: TelegramBot,
+  msg: TelegramBot.Message,
+) => {
+  bot.sendMessage(msg.chat.id, translations.enterApartmentNumber, cancelKeyboard);
+  
+  const listener = (response: TelegramBot.Message) => {
+    if (response.text === translations.cancel) {
+      bot.sendMessage(msg.chat.id, translations.welcomeMessage, mainKeyboard);
+      return;
+    }
+
+    const apartmentNumber = parseInt(response.text || '', 10);
+
+    if (isNaN(apartmentNumber)) {
+      bot.sendMessage(msg.chat.id, translations.invalidApartmentNumber, cancelKeyboard);
+      return;
+    }
+
+    bot.sendMessage(msg.chat.id, translations.enterResidentName, cancelKeyboard);
+
+    const residentListener = (residentResponse: TelegramBot.Message) => {
+      if (residentResponse.text === translations.cancel) {
+        bot.sendMessage(msg.chat.id, translations.welcomeMessage, mainKeyboard);
+        return;
+      }
+
+      const residentName = residentResponse.text?.trim();
+
+      if (!residentName) {
+        bot.sendMessage(msg.chat.id, translations.invalidName, cancelKeyboard);
+        return;
+      }
+
+      try {
+        const building = loadBuilding();
+        for (const [floorKey, apartments] of Object.entries(building)) {
+          if (apartments[apartmentNumber]) {
+            apartments[apartmentNumber].push(residentName);
+            saveBuilding(building);
+            bot.sendMessage(
+              msg.chat.id,
+              translations.residentAdded
+                .replace('{residentName}', residentName)
+                .replace('{apartmentNumber}', apartmentNumber.toString())
+                .replace('{floor}', floorKey),
+              mainKeyboard
+            );
+            return;
+          }
+        }
+
+        bot.sendMessage(
+          msg.chat.id,
+          translations.apartmentNotFound
+            .replace('{apartmentNumber}', apartmentNumber.toString())
+            .replace('{floor}', 'unknown'),
+          mainKeyboard
+        );
+      } catch (error) {
+        bot.sendMessage(msg.chat.id, translations.apartmentNotFound.replace('{apartmentNumber}', apartmentNumber.toString()), mainKeyboard);
+      }
+    };
+
+    bot.once('message', residentListener);
+  };
+
+  bot.once('message', listener);
+};
+
+export const handleGetResidentsByApartment = (
+  bot: TelegramBot,
+  msg: TelegramBot.Message,
+) => {
+  bot.sendMessage(msg.chat.id, translations.enterApartmentNumber, cancelKeyboard);
+  const building = loadBuilding();
+
+  const listener = (response: TelegramBot.Message) => {
+    if (response.text === translations.cancel) {
+      bot.sendMessage(msg.chat.id, translations.welcomeMessage, mainKeyboard);
+      return;
+    }
+
+    const apartmentNumber = parseInt(response.text || '', 10);
+
+    if (isNaN(apartmentNumber)) {
+      bot.sendMessage(msg.chat.id, translations.invalidApartmentNumber, cancelKeyboard);
+      return;
+    }
+
+    try {
+      let residents: string[] = [];
+      let floor: string | undefined;
+
+      for (const [floorKey, apartments] of Object.entries(building)) {
+        if (apartments[apartmentNumber]) {
+          residents = apartments[apartmentNumber];
+          floor = floorKey;
+          break;
+        }
+      }
+
+      if (residents.length > 0 && floor) {
+        bot.sendMessage(
+          msg.chat.id,
+          translations.residentsList
+            .replace('{apartmentNumber}', apartmentNumber.toString())
+            .replace('{floor}', floor)
+            .replace('{residents}', residents.join(', ')),
+          mainKeyboard
+        );
+      } else if (floor) {
+        bot.sendMessage(
+          msg.chat.id,
+          translations.noResidents
+            .replace('{apartmentNumber}', apartmentNumber.toString())
+            .replace('{floor}', floor),
+          mainKeyboard
+        );
+      } else {
+        bot.sendMessage(
+          msg.chat.id,
+          translations.apartmentNotFound
+            .replace('{apartmentNumber}', apartmentNumber.toString())
+            .replace('{floor}', 'unknown'),
+          mainKeyboard
+        );
+      }
+    } catch (error) {
+      bot.sendMessage(msg.chat.id, translations.apartmentNotFound.replace('{apartmentNumber}', apartmentNumber.toString()), mainKeyboard);
+    }
   };
 
   bot.once('message', listener);

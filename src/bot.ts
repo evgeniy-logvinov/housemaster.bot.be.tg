@@ -3,10 +3,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import TelegramBot from 'node-telegram-bot-api';
-import { mainKeyboard, cancelKeyboard } from './handlers/keyboard';
-import { handleAddMeAsResident, handleRemoveMeAsResident } from './handlers/residents';
-import { loadBuilding, saveBuilding } from './data/buildingHelper';
+import { mainKeyboard } from './handlers/keyboard';
 import translationsData from './data/translations.json'; // Import translations
+import { handleAddMeAsResident, handleRemoveMeAsResident, handleAddResident, handleGetResidentsByApartment } from './handlers/residents';
 
 // Load environment variables
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -28,9 +27,6 @@ console.log('Translations:', translations);
 // Initialize bot
 const bot = new TelegramBot(token, { polling: true });
 
-// Load building data
-let building = loadBuilding();
-
 // Send a welcome message with the main keyboard when the bot starts
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
@@ -39,160 +35,14 @@ bot.onText(/\/start/, (msg) => {
 
 // Обновление обработчиков команд
 bot.on('message', (msg) => {
-  const chatId = msg.chat.id;
-
   if (msg.text === translations.addMeAsResident) {
-    bot.sendMessage(chatId, translations.enterApartmentNumber, cancelKeyboard);
-
-    const listener = (response: TelegramBot.Message) => {
-      if (response.text === translations.cancel) {
-        bot.sendMessage(chatId, translations.welcomeMessage, mainKeyboard);
-        return;
-      }
-
-      handleAddMeAsResident(bot, response, building, saveBuilding);
-    };
-
-    bot.once('message', listener);
+    handleAddMeAsResident(bot, msg);
   } else if (msg.text === translations.removeMeAsResident) {
-    bot.sendMessage(chatId, translations.enterApartmentNumber, cancelKeyboard);
-
-    const listener = (response: TelegramBot.Message) => {
-      if (response.text === translations.cancel) {
-        bot.sendMessage(chatId, translations.welcomeMessage, mainKeyboard);
-        return;
-      }
-
-      handleRemoveMeAsResident(bot, response, building, saveBuilding);
-    };
-
-    bot.once('message', listener);
+    handleRemoveMeAsResident(bot, msg);
   } else if (msg.text === translations.getResidentsByApartment) {
-    bot.sendMessage(chatId, translations.enterApartmentNumber, cancelKeyboard);
-
-    const listener = (response: TelegramBot.Message) => {
-      if (response.text === translations.cancel) {
-        bot.sendMessage(chatId, translations.welcomeMessage, mainKeyboard);
-        return;
-      }
-
-      const apartmentNumber = parseInt(response.text || '', 10);
-
-      if (isNaN(apartmentNumber)) {
-        bot.sendMessage(chatId, translations.invalidApartmentNumber, cancelKeyboard);
-        return;
-      }
-
-      try {
-        let residents: string[] = [];
-        let floor: string | undefined;
-
-        // Find the apartment and its floor
-        for (const [floorKey, apartments] of Object.entries(building)) {
-          if (apartments[apartmentNumber]) {
-            residents = apartments[apartmentNumber];
-            floor = floorKey;
-            break;
-          }
-        }
-
-        if (residents.length > 0 && floor) {
-          bot.sendMessage(
-            chatId,
-            translations.residentsList
-              .replace('{apartmentNumber}', apartmentNumber.toString())
-              .replace('{floor}', floor)
-              .replace('{residents}', residents.join(', ')),
-            mainKeyboard
-          );
-        } else if (floor) {
-          bot.sendMessage(
-            chatId,
-            translations.noResidents
-              .replace('{apartmentNumber}', apartmentNumber.toString())
-              .replace('{floor}', floor),
-            mainKeyboard
-          );
-        } else {
-          bot.sendMessage(
-            chatId,
-            translations.apartmentNotFound
-              .replace('{apartmentNumber}', apartmentNumber.toString())
-              .replace('{floor}', 'unknown'),
-            mainKeyboard
-          );
-        }
-      } catch (error) {
-        bot.sendMessage(chatId, translations.apartmentNotFound.replace('{apartmentNumber}', apartmentNumber.toString()), mainKeyboard);
-      }
-    };
-
-    bot.once('message', listener);
+    handleGetResidentsByApartment(bot, msg);
   } else if (msg.text === translations.addResident) {
-    bot.sendMessage(chatId, translations.enterApartmentNumber, cancelKeyboard);
-
-    const listener = (response: TelegramBot.Message) => {
-      if (response.text === translations.cancel) {
-        bot.sendMessage(chatId, translations.welcomeMessage, mainKeyboard);
-        return;
-      }
-
-      const apartmentNumber = parseInt(response.text || '', 10);
-
-      if (isNaN(apartmentNumber)) {
-        bot.sendMessage(chatId, translations.invalidApartmentNumber, cancelKeyboard);
-        return;
-      }
-
-      bot.sendMessage(chatId, translations.enterResidentName, cancelKeyboard);
-
-      const residentListener = (residentResponse: TelegramBot.Message) => {
-        if (residentResponse.text === translations.cancel) {
-          bot.sendMessage(chatId, translations.welcomeMessage, mainKeyboard);
-          return;
-        }
-
-        const residentName = residentResponse.text?.trim();
-
-        if (!residentName) {
-          bot.sendMessage(chatId, translations.invalidName, cancelKeyboard);
-          return;
-        }
-
-        try {
-          const building = loadBuilding();
-          for (const [floorKey, apartments] of Object.entries(building)) {
-            if (apartments[apartmentNumber]) {
-              apartments[apartmentNumber].push(residentName);
-              saveBuilding(building);
-              bot.sendMessage(
-                chatId,
-                translations.residentAdded
-                  .replace('{residentName}', residentName)
-                  .replace('{apartmentNumber}', apartmentNumber.toString())
-                  .replace('{floor}', floorKey),
-                mainKeyboard
-              );
-              return;
-            }
-          }
-
-          bot.sendMessage(
-            chatId,
-            translations.apartmentNotFound
-              .replace('{apartmentNumber}', apartmentNumber.toString())
-              .replace('{floor}', 'unknown'),
-            mainKeyboard
-          );
-        } catch (error) {
-          bot.sendMessage(chatId, translations.apartmentNotFound.replace('{apartmentNumber}', apartmentNumber.toString()), mainKeyboard);
-        }
-      };
-
-      bot.once('message', residentListener);
-    };
-
-    bot.once('message', listener);
+    handleAddResident(bot, msg);
   }
 });
 
