@@ -5,7 +5,7 @@ dotenv.config();
 import TelegramBot from 'node-telegram-bot-api';
 import { mainKeyboard } from './handlers/keyboard';
 import translationsData from './data/translations.json'; // Import translations
-import { handleAddMeAsResident, handleRemoveMeAsResident, handleAddResident, handleGetResidentsByApartment } from './handlers/residents';
+import { handleAddMeAsResident, handleRemoveMeAsResident, handleAddResident, handleGetResidentsByApartment, handleRemoveResidentByName } from './handlers/residents';
 
 // Load environment variables
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -33,7 +33,7 @@ bot.onText(/\/start/, (msg) => {
   bot.sendMessage(chatId, translations.welcomeMessage, mainKeyboard);
 });
 
-// Обновление обработчиков команд
+// Command handlers
 bot.on('message', (msg) => {
   if (msg.text === translations.addMeAsResident) {
     handleAddMeAsResident(bot, msg);
@@ -43,6 +43,8 @@ bot.on('message', (msg) => {
     handleGetResidentsByApartment(bot, msg);
   } else if (msg.text === translations.addResident) {
     handleAddResident(bot, msg);
+  } else if (msg.text === translations.removeResidentByName) {
+    handleRemoveResidentByName(bot, msg);
   }
 });
 

@@ -9,7 +9,7 @@
     "invalidApartmentNumber": "Please enter a valid apartment number.",
     "noResidents": "Apartment {apartmentNumber} on floor {floor} has no residents.",
     "residentsList": "Residents of apartment {apartmentNumber} on floor {floor}: {residents}",
-    "enterResidentName": "Enter the name of the resident to add:",
+    "enterResidentName": "Enter the name of the resident:",
     "residentAdded": "Resident \"{residentName}\" has been added to apartment {apartmentNumber} on floor {floor}.",
     "apartmentNotFound": "Apartment number {apartmentNumber} on floor {floor} not found.",
     "invalidName": "Invalid name. Please try again.",
@@ -20,6 +20,7 @@
     "alreadyResident": "You are already a resident of apartment {apartmentNumber} on floor {floor}.",
     "notResident": "You are not a resident of apartment {apartmentNumber} on floor {floor}.",
     "residentRemoved": "Resident \"{residentName}\" has been removed from apartment {apartmentNumber} on floor {floor}.",
+    "removeResidentByName": "Remove Resident by Name",
     "cancel": "Cancel"
   },
   "ru": {
@@ -32,7 +33,7 @@
     "invalidApartmentNumber": "Пожалуйста, введите корректный номер квартиры.",
     "noResidents": "В квартире {apartmentNumber} на этаже {floor} нет жильцов.",
     "residentsList": "Жильцы квартиры {apartmentNumber} на этаже {floor}: {residents}",
-    "enterResidentName": "Введите имя жильца для добавления:",
+    "enterResidentName": "Введите имя жильца:",
     "residentAdded": "Жилец \"{residentName}\" был добавлен в квартиру {apartmentNumber} на этаже {floor}.",
     "apartmentNotFound": "Квартира с номером {apartmentNumber} на этаже {floor} не найдена.",
     "invalidName": "Неверное имя. Пожалуйста, попробуйте снова.",
@@ -43,6 +44,7 @@
     "alreadyResident": "Вы уже являетесь жильцом квартиры {apartmentNumber} на этаже {floor}.",
     "notResident": "Вы не являетесь жильцом квартиры {apartmentNumber} на этаже {floor}.",
     "residentRemoved": "Жилец \"{residentName}\" был удален из квартиры {apartmentNumber} на этаже {floor}.",
+    "removeResidentByName": "Удалить жильца по имени",
     "cancel": "Отмена"
   }
 }

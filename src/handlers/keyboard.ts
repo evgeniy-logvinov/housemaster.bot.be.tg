@@ -10,6 +10,7 @@ export const mainKeyboard = {
       [{ text: t.removeMeAsResident }], // Button to remove the current user as a resident
       [{ text: t.getResidentsByApartment }], // Button to get residents by apartment number
       [{ text: t.addResident }], // Button to add another user as a resident
+      [{ text: t.removeResidentByName }], // Button to remove another user by name
     ],
     resize_keyboard: true,
     one_time_keyboard: false
