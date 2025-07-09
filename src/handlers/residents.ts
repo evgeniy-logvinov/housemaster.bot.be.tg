@@ -144,25 +144,25 @@ async function getOrGenerateBuildingImage(building: any) {
   }
 
   // Генерируем SVG и PNG
-  const svgContent = generateSvg(building);
+  const svgContent = generateSvg(building.schema);
   fs.writeFileSync(svgPath, svgContent);
   const pngBuffer = await sharp(Buffer.from(svgContent, 'utf-8')).png().toBuffer();
   fs.writeFileSync(pngPath, pngBuffer);
   return pngBuffer;
 }
 
-async function regenerateBuildingImage(building: any) {
-  const hash = crypto.createHash('md5').update(JSON.stringify(building)).digest('hex');
-  if (cachedBuildingHash === hash && cachedBuildingPng) {
-    return cachedBuildingPng;
-  }
-  const svgContent = generateSvg(building);
-  const svgBuffer = Buffer.from(svgContent, 'utf-8');
-  const pngBuffer = await sharp(svgBuffer).png().toBuffer();
-  cachedBuildingPng = pngBuffer;
-  cachedBuildingHash = hash;
-  return pngBuffer;
-}
+// async function regenerateBuildingImage(building: any) {
+//   const hash = crypto.createHash('md5').update(JSON.stringify(building)).digest('hex');
+//   if (cachedBuildingHash === hash && cachedBuildingPng) {
+//     return cachedBuildingPng;
+//   }
+//   const svgContent = generateSvg(building.schema);
+//   const svgBuffer = Buffer.from(svgContent, 'utf-8');
+//   const pngBuffer = await sharp(svgBuffer).png().toBuffer();
+//   cachedBuildingPng = pngBuffer;
+//   cachedBuildingHash = hash;
+//   return pngBuffer;
+// }
 
 export const handleAddMeAsResident = (bot: TelegramBot, msg: TelegramBot.Message) => {
   const building = loadBuilding();

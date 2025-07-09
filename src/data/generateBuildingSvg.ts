@@ -140,6 +140,6 @@ export function generateSvg(data: any) {
 }
 
 // Generate and save the SVG
-const svgContent = generateSvg(buildingData);
+const svgContent = generateSvg(buildingData.schema);
 fs.writeFileSync('building.svg', svgContent);
 console.log('SVG generated: building.svg');

@@ -29,7 +29,9 @@
         "numbers": []
       },
       "6": {
-        "residents": [],
+        "residents": [
+          "evgeniy_logvinov"
+        ],
         "numbers": []
       }
     },
@@ -291,7 +293,9 @@
         "numbers": []
       },
       "66": {
-        "residents": [],
+        "residents": [
+          "evgeniy_logvinov"
+        ],
         "numbers": []
       }
     },
