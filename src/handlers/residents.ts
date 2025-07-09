@@ -6,6 +6,7 @@ import { generateSvg } from '../data/generateBuildingSvg';
 import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 
 const language = (process.env.LANGUAGE as unknown as 'en' | 'ru') || 'en';
 const translations = translationsData[language];
@@ -24,6 +25,9 @@ export const pendingReplies: { [key: string]: PendingReply } = {};
 function getPendingKey(chatId: number, userId: number) {
   return `${chatId}:${userId}`;
 }
+
+let cachedBuildingPng: Buffer | null = null;
+let cachedBuildingHash: string | null = null;
 
 // --- Common utilities ---
 
@@ -126,10 +130,16 @@ function askPhoneNumber(
 // --- Main handlers ---
 
 async function regenerateBuildingImage(building: any) {
+  const hash = crypto.createHash('md5').update(JSON.stringify(building)).digest('hex');
+  if (cachedBuildingHash === hash && cachedBuildingPng) {
+    return cachedBuildingPng;
+  }
   const svgContent = generateSvg(building);
   const svgBuffer = Buffer.from(svgContent, 'utf-8');
   const pngBuffer = await sharp(svgBuffer).png().toBuffer();
-  fs.writeFileSync(buildingImagePath, pngBuffer);
+  cachedBuildingPng = pngBuffer;
+  cachedBuildingHash = hash;
+  return pngBuffer;
 }
 
 export const handleAddMeAsResident = (bot: TelegramBot, msg: TelegramBot.Message) => {
@@ -450,37 +460,10 @@ export const handleRemovePhoneNumber = (bot: TelegramBot, msg: TelegramBot.Messa
 
 export const handleGenerateBuildingImage = async (bot: TelegramBot, msg: TelegramBot.Message) => {
   try {
-    if (fs.existsSync(buildingImagePath)) {
-      // Отправить готовую картинку
-      await bot.sendPhoto(
-        msg.chat.id,
-        buildingImagePath,
-        {
-          caption: 'Building map (PNG)',
-          reply_markup: mainKeyboard.reply_markup
-        }
-      );
-    } else {
-      // Если файла нет — сгенерировать и отправить
-      const building = loadBuilding();
-      const svgContent = generateSvg(building);
-      const svgBuffer = Buffer.from(svgContent, 'utf-8');
-      const pngBuffer = await sharp(svgBuffer).png().toBuffer();
-      fs.writeFileSync(buildingImagePath, pngBuffer);
-      await bot.sendPhoto(
-        msg.chat.id,
-        buildingImagePath,
-        {
-          caption: 'Building map (PNG)',
-          reply_markup: mainKeyboard.reply_markup
-        }
-      );
-    }
+    const building = loadBuilding();
+    const pngBuffer = await regenerateBuildingImage(building);
+    await bot.sendPhoto(msg.chat.id, pngBuffer, { caption: 'Карта здания' });
   } catch (error) {
-    bot.sendMessage(
-      msg.chat.id,
-      translations.errorGeneratingImage || 'Failed to generate building image. Please try again later.',
-      mainKeyboard
-    );
+    bot.sendMessage(msg.chat.id, translations.errorGeneratingImage, mainKeyboard);
   }
 };
