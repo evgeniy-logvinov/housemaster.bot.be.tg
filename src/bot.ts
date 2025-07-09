@@ -35,6 +35,7 @@ bot.onText(/\/start|привет ?домовой/i, (msg) => {
 
 // Command handlers
 bot.on('message', (msg) => {
+  console.log('Received message:', msg.text, 'from:', msg.from?.username, 'chat:', msg.chat.id);
   if (msg.from && pendingReplies) {
     const key = `${msg.chat.id}:${msg.from.id}`;
     if (pendingReplies[key]) {
