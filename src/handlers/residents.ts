@@ -4,9 +4,13 @@ import { mainKeyboard, cancelKeyboard } from '../handlers/keyboard';
 import { loadBuilding, saveBuilding } from '../data/buildingHelper';
 import { generateSvg } from '../data/generateBuildingSvg';
 import sharp from 'sharp';
+import path from 'path';
+import fs from 'fs';
 
 const language = (process.env.LANGUAGE as unknown as 'en' | 'ru') || 'en';
 const translations = translationsData[language];
+
+const buildingImagePath = path.join(__dirname, '../data/building.png');
 
 type PendingReply = {
   step: string;
@@ -121,11 +125,17 @@ function askPhoneNumber(
 
 // --- Main handlers ---
 
+async function regenerateBuildingImage(building: any) {
+  const svgContent = generateSvg(building);
+  const svgBuffer = Buffer.from(svgContent, 'utf-8');
+  const pngBuffer = await sharp(svgBuffer).png().toBuffer();
+  fs.writeFileSync(buildingImagePath, pngBuffer);
+}
+
 export const handleAddMeAsResident = (bot: TelegramBot, msg: TelegramBot.Message) => {
   const building = loadBuilding();
-  generateSvg(building);
 
-  askApartmentNumber(bot, msg, (apartmentNumber) => {
+  askApartmentNumber(bot, msg, async (apartmentNumber) => {
     const userName = msg.from?.username || msg.from?.first_name || 'Unknown User';
 
     for (const [floor, apartments] of Object.entries(building)) {
@@ -144,6 +154,7 @@ export const handleAddMeAsResident = (bot: TelegramBot, msg: TelegramBot.Message
 
         flat.residents.push(userName);
         saveBuilding(building);
+        await regenerateBuildingImage(building);
         bot.sendMessage(
           msg.chat.id,
           translations.residentAdded
@@ -168,7 +179,7 @@ export const handleAddMeAsResident = (bot: TelegramBot, msg: TelegramBot.Message
 
 export const handleRemoveMeAsResident = (bot: TelegramBot, msg: TelegramBot.Message) => {
   const building = loadBuilding();
-  askApartmentNumber(bot, msg, (selectedApartment) => {
+  askApartmentNumber(bot, msg, async (selectedApartment) => {
     const userName = msg.from?.username || msg.from?.first_name || 'Unknown User';
 
     for (const [floor, apartments] of Object.entries(building)) {
@@ -187,6 +198,7 @@ export const handleRemoveMeAsResident = (bot: TelegramBot, msg: TelegramBot.Mess
 
         flat.residents = flat.residents.filter((resident: string) => resident !== userName);
         saveBuilding(building);
+        await regenerateBuildingImage(building);
         bot.sendMessage(
           msg.chat.id,
           translations.residentRemoved
@@ -209,7 +221,7 @@ export const handleRemoveMeAsResident = (bot: TelegramBot, msg: TelegramBot.Mess
 
 export const handleAddResident = (bot: TelegramBot, msg: TelegramBot.Message) => {
   askApartmentNumber(bot, msg, (apartmentNumber) => {
-    askResidentName(bot, msg, (residentName) => {
+    askResidentName(bot, msg, async (residentName) => {
       try {
         const building = loadBuilding();
         for (const [floorKey, apartments] of Object.entries(building)) {
@@ -217,6 +229,7 @@ export const handleAddResident = (bot: TelegramBot, msg: TelegramBot.Message) =>
           if (flat) {
             flat.residents.push(residentName);
             saveBuilding(building);
+            await regenerateBuildingImage(building);
             bot.sendMessage(
               msg.chat.id,
               translations.residentAdded
@@ -248,7 +261,7 @@ export const handleAddPhoneNumber = (bot: TelegramBot, msg: TelegramBot.Message)
   askApartmentNumber(bot, msg, (apartmentNumber) => {
     bot.sendMessage(msg.chat.id, translations.enterPhoneNumber, cancelKeyboard);
 
-    const listener = (response: TelegramBot.Message) => {
+    const listener = async (response: TelegramBot.Message) => {
       if (response.text === translations.cancel) {
         bot.sendMessage(msg.chat.id, translations.welcomeMessage, mainKeyboard);
         return;
@@ -265,6 +278,7 @@ export const handleAddPhoneNumber = (bot: TelegramBot, msg: TelegramBot.Message)
         if (flat) {
           flat.numbers.push(phone);
           saveBuilding(building);
+          await regenerateBuildingImage(building);
           bot.sendMessage(
             msg.chat.id,
             translations.phoneNumberAdded
@@ -336,7 +350,7 @@ export const handleGetResidentsByApartment = (bot: TelegramBot, msg: TelegramBot
 export const handleRemoveResidentByName = (bot: TelegramBot, msg: TelegramBot.Message) => {
   const building = loadBuilding();
   askApartmentNumber(bot, msg, (apartmentNumber) => {
-    askResidentName(bot, msg, (residentName) => {
+    askResidentName(bot, msg, async (residentName) => {
       let found = false;
       for (const [floorKey, apartments] of Object.entries(building)) {
         const flat = apartments[apartmentNumber];
@@ -346,6 +360,7 @@ export const handleRemoveResidentByName = (bot: TelegramBot, msg: TelegramBot.Me
           if (flat.residents.length < before) {
             found = true;
             saveBuilding(building);
+            await regenerateBuildingImage(building);
             bot.sendMessage(
               msg.chat.id,
               translations.residentRemoved
@@ -377,7 +392,7 @@ export const handleRemovePhoneNumber = (bot: TelegramBot, msg: TelegramBot.Messa
   askApartmentNumber(bot, msg, (apartmentNumber) => {
     bot.sendMessage(msg.chat.id, translations.enterPhoneNumberToRemove, cancelKeyboard);
 
-    const listener = (response: TelegramBot.Message) => {
+    const listener = async (response: TelegramBot.Message) => {
       if (response.text === translations.cancel) {
         bot.sendMessage(msg.chat.id, translations.welcomeMessage, mainKeyboard);
         return;
@@ -396,6 +411,7 @@ export const handleRemovePhoneNumber = (bot: TelegramBot, msg: TelegramBot.Messa
           if (index !== -1) {
             flat.numbers.splice(index, 1);
             saveBuilding(building);
+            await regenerateBuildingImage(building);
             bot.sendMessage(
               msg.chat.id,
               translations.phoneNumberRemoved
@@ -434,19 +450,32 @@ export const handleRemovePhoneNumber = (bot: TelegramBot, msg: TelegramBot.Messa
 
 export const handleGenerateBuildingImage = async (bot: TelegramBot, msg: TelegramBot.Message) => {
   try {
-    const building = loadBuilding();
-    const svgContent = generateSvg(building);
-    const svgBuffer = Buffer.from(svgContent, 'utf-8');
-    const pngBuffer = await sharp(svgBuffer).png().toBuffer();
-
-    bot.sendPhoto(
-      msg.chat.id,
-      pngBuffer,
-      {
-        caption: 'Building map (PNG)',
-        reply_markup: mainKeyboard.reply_markup
-      }
-    );
+    if (fs.existsSync(buildingImagePath)) {
+      // Отправить готовую картинку
+      await bot.sendPhoto(
+        msg.chat.id,
+        buildingImagePath,
+        {
+          caption: 'Building map (PNG)',
+          reply_markup: mainKeyboard.reply_markup
+        }
+      );
+    } else {
+      // Если файла нет — сгенерировать и отправить
+      const building = loadBuilding();
+      const svgContent = generateSvg(building);
+      const svgBuffer = Buffer.from(svgContent, 'utf-8');
+      const pngBuffer = await sharp(svgBuffer).png().toBuffer();
+      fs.writeFileSync(buildingImagePath, pngBuffer);
+      await bot.sendPhoto(
+        msg.chat.id,
+        buildingImagePath,
+        {
+          caption: 'Building map (PNG)',
+          reply_markup: mainKeyboard.reply_markup
+        }
+      );
+    }
   } catch (error) {
     bot.sendMessage(
       msg.chat.id,
