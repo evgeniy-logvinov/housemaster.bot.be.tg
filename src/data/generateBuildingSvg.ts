@@ -63,6 +63,7 @@ const floorsPerRow = 6; // Количество этажей в ряду
 
 // Generate SVG content
 export function generateSvg(data: any) {
+  console.log('Generating SVG for building data');
   const floors = Object.keys(data).sort((a, b) => Number(a) - Number(b));
   const numRows = Math.ceil(floors.length / floorsPerRow);
 
