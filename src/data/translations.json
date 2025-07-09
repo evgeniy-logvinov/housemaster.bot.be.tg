@@ -37,10 +37,12 @@
     "svgApt": "Apt",
     "svgResidentOne": "resident",
     "svgResidentFew": "residents",
-    "svgResidentMany": "residents"
+    "svgResidentMany": "residents",
+    "closeKeyboard": "Close Keyboard",
+    "keyboardClosed": "Keyboard closed. See you later! To continue, type /start."
   },
   "ru": {
-    "welcomeMessage": "Добро пожаловать! Используйте кнопки ниже для управления квартирами и жильцами.",
+    "welcomeMessage": "Добро пожаловать! Я домовой. Используйте кнопки ниже для управления квартирами и жильцами.",
     "addMeAsResident": "Добавить меня как жильца",
     "removeMeAsResident": "Удалить меня как жильца",
     "getResidentsByApartment": "Получить жильцов по квартире",
@@ -77,6 +79,8 @@
     "svgApt": "Кв.",
     "svgResidentOne": "жилец",
     "svgResidentFew": "жильца",
-    "svgResidentMany": "жильцов"
+    "svgResidentMany": "жильцов",
+    "closeKeyboard": "Закрыть клавиатуру",
+    "keyboardClosed": "Клавиатура закрыта. Домовой идет спать. Увидимся позже! Чтобы продолжить, введите /start или 'привет домовой'."
   }
 }

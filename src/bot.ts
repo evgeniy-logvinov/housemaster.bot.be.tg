@@ -28,7 +28,7 @@ console.log('Translations:', translations);
 const bot = new TelegramBot(token, { polling: true });
 
 // Send a welcome message with the main keyboard when the bot starts
-bot.onText(/\/start/, (msg) => {
+bot.onText(/\/start|привет ?домовой/i, (msg) => {
   const chatId = msg.chat.id;
   bot.sendMessage(chatId, translations.welcomeMessage, mainKeyboard);
 });
@@ -58,6 +58,10 @@ bot.on('message', (msg) => {
     handleRemovePhoneNumber(bot, msg);
   } else if (msg.text === translations.generateBuildingImage) {
     handleGenerateBuildingImage(bot, msg);
+  } else if (msg.text === translations.closeKeyboard) {
+    bot.sendMessage(msg.chat.id, translations.keyboardClosed, {
+      reply_markup: { remove_keyboard: true }
+    });
   }
 });
 

@@ -14,6 +14,7 @@ export const mainKeyboard = {
       [{ text: t.addPhoneNumber }], // Button to add a phone number
       [{ text: t.removePhoneNumber }], // Button to remove a phone number
       [{ text: t.generateBuildingImage }], // Button to generate and show building image
+      [{ text: t.closeKeyboard }], // Новая кнопка
     ],
     resize_keyboard: true,
     one_time_keyboard: false
