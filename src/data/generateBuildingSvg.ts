@@ -89,7 +89,7 @@ export function generateSvg(data: any) {
     const floorY = margin + row * floorHeight;
 
     // Название этажа
-    svg += `  <text x="${floorX}" y="${floorY + textOffset}" fill="#fff" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="bold" letter-spacing="1">${t.svgFloor} ${floorNumber}</text>\n`;
+    svg += `  <text x="${floorX}" y="${floorY + textOffset}" fill="#fff" font-family="Arial, sans-serif" font-size="20" font-weight="bold" letter-spacing="1">${t.svgFloor} ${floorNumber}</text>\n`;
 
     // Квадратные координаты для 6 квартир (по часовой стрелке, начиная с левого нижнего)
     const squarePositions = [
@@ -114,7 +114,7 @@ export function generateSvg(data: any) {
       svg += `  <rect x="${x}" y="${y}" width="${apartmentWidth - 10}" height="${apartmentHeight}" rx="14" ry="14" fill="${isOccupied ? occupiedColor : emptyColor}" stroke="${borderColor}" stroke-width="1.5" filter="url(#shadow)" />\n`;
 
       // В рендере номера квартиры используйте accentColor:
-      svg += `  <text x="${x + 10}" y="${y + 24}" fill="${accentColor}" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="bold">${t.svgApt} ${apartmentNumber}</text>\n`;
+      svg += `  <text x="${x + 10}" y="${y + 24}" fill="${accentColor}" font-family="Arial, sans-serif" font-size="13" font-weight="bold">${t.svgApt} ${apartmentNumber}</text>\n`;
 
       // Для остального текста используйте occupiedTextColor или emptyTextColor в зависимости от isOccupied.
 
