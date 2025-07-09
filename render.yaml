@@ -12,3 +12,4 @@ services:
         value: ru
     autoDeploy: true
     region: frankfurt
+    dockerfilePath: ./Dockerfile
