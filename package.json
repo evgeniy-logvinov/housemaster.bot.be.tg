@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon --watch src --exec ts-node src/bot.ts",
     "build": "tsc",
-    "bot": "ts-node src/bot.ts"
+    "bot": "ts-node --max-old-space-size=384 src/bot.ts"
   },
   "repository": {
     "type": "git",
