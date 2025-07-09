@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon --watch src --exec ts-node src/bot.ts",
     "build": "tsc && cp src/data/building.json dist/data/building.json && cp src/data/translations.json dist/data/translations.json && cp -f src/data/building.svg dist/data/building.svg 2>/dev/null || true && cp -f src/data/building.png dist/data/building.png 2>/dev/null || true",
-    "bot": "node --max-old-space-size=384 dist/bot.js"
+    "bot": "node dist/bot.js",
+    "bot:conditional": "node --max-old-space-size=384 dist/bot.js"
   },
   "repository": {
     "type": "git",
