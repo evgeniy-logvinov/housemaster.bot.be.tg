@@ -129,6 +129,28 @@ function askPhoneNumber(
 
 // --- Main handlers ---
 
+function getBuildingVersion(building: any): number {
+  return building.version || 1;
+}
+
+async function getOrGenerateBuildingImage(building: any) {
+  const version = getBuildingVersion(building);
+  const svgPath = path.join(__dirname, `../data/building.v${version}.svg`);
+  const pngPath = path.join(__dirname, `../data/building.v${version}.png`);
+
+  // Если PNG уже есть — возвращаем его
+  if (fs.existsSync(pngPath)) {
+    return fs.readFileSync(pngPath);
+  }
+
+  // Генерируем SVG и PNG
+  const svgContent = generateSvg(building);
+  fs.writeFileSync(svgPath, svgContent);
+  const pngBuffer = await sharp(Buffer.from(svgContent, 'utf-8')).png().toBuffer();
+  fs.writeFileSync(pngPath, pngBuffer);
+  return pngBuffer;
+}
+
 async function regenerateBuildingImage(building: any) {
   const hash = crypto.createHash('md5').update(JSON.stringify(building)).digest('hex');
   if (cachedBuildingHash === hash && cachedBuildingPng) {
@@ -148,7 +170,7 @@ export const handleAddMeAsResident = (bot: TelegramBot, msg: TelegramBot.Message
   askApartmentNumber(bot, msg, async (apartmentNumber) => {
     const userName = msg.from?.username || msg.from?.first_name || 'Unknown User';
 
-    for (const [floor, apartments] of Object.entries(building)) {
+    for (const [floor, apartments] of Object.entries(building.schema)) {
       const flat = apartments[apartmentNumber];
       if (flat) {
         if (flat.residents.includes(userName)) {
@@ -192,7 +214,7 @@ export const handleRemoveMeAsResident = (bot: TelegramBot, msg: TelegramBot.Mess
   askApartmentNumber(bot, msg, async (selectedApartment) => {
     const userName = msg.from?.username || msg.from?.first_name || 'Unknown User';
 
-    for (const [floor, apartments] of Object.entries(building)) {
+    for (const [floor, apartments] of Object.entries(building.schema)) {
       const flat = apartments[selectedApartment];
       if (flat) {
         if (!flat.residents.includes(userName)) {
@@ -234,7 +256,7 @@ export const handleAddResident = (bot: TelegramBot, msg: TelegramBot.Message) =>
     askResidentName(bot, msg, async (residentName) => {
       try {
         const building = loadBuilding();
-        for (const [floorKey, apartments] of Object.entries(building)) {
+        for (const [floorKey, apartments] of Object.entries(building.schema)) {
           const flat = apartments[apartmentNumber];
           if (flat) {
             flat.residents.push(residentName);
@@ -283,7 +305,7 @@ export const handleAddPhoneNumber = (bot: TelegramBot, msg: TelegramBot.Message)
         return;
       }
 
-      for (const [floor, apartments] of Object.entries(building)) {
+      for (const [floor, apartments] of Object.entries(building.schema)) {
         const flat = apartments[apartmentNumber];
         if (flat) {
           flat.numbers.push(phone);
@@ -322,7 +344,7 @@ export const handleGetResidentsByApartment = (bot: TelegramBot, msg: TelegramBot
       let numbers: string[] = [];
       let floor: string | undefined;
 
-      for (const [floorKey, apartments] of Object.entries(building)) {
+      for (const [floorKey, apartments] of Object.entries(building.schema)) {
         const flat = apartments[apartmentNumber];
         if (flat) {
           residents = flat.residents;
@@ -362,7 +384,7 @@ export const handleRemoveResidentByName = (bot: TelegramBot, msg: TelegramBot.Me
   askApartmentNumber(bot, msg, (apartmentNumber) => {
     askResidentName(bot, msg, async (residentName) => {
       let found = false;
-      for (const [floorKey, apartments] of Object.entries(building)) {
+      for (const [floorKey, apartments] of Object.entries(building.schema)) {
         const flat = apartments[apartmentNumber];
         if (flat) {
           const before = flat.residents.length;
@@ -414,7 +436,7 @@ export const handleRemovePhoneNumber = (bot: TelegramBot, msg: TelegramBot.Messa
         return;
       }
 
-      for (const [floor, apartments] of Object.entries(building)) {
+      for (const [floor, apartments] of Object.entries(building.schema)) {
         const flat = apartments[apartmentNumber];
         if (flat) {
           const index = flat.numbers.indexOf(phone);
@@ -461,7 +483,7 @@ export const handleRemovePhoneNumber = (bot: TelegramBot, msg: TelegramBot.Messa
 export const handleGenerateBuildingImage = async (bot: TelegramBot, msg: TelegramBot.Message) => {
   try {
     const building = loadBuilding();
-    const pngBuffer = await regenerateBuildingImage(building);
+    const pngBuffer = await getOrGenerateBuildingImage(building);
     await bot.sendPhoto(msg.chat.id, pngBuffer, { caption: 'Карта здания' });
   } catch (error) {
     bot.sendMessage(msg.chat.id, translations.errorGeneratingImage, mainKeyboard);

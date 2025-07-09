@@ -22,7 +22,7 @@ export const saveBuilding = (building: Building) => {
 export const getResidentsByApartment = (apartmentNumber: number): string[] => {
   const building = loadBuilding();
 
-  for (const floor of Object.values(building)) {
+  for (const floor of Object.values(building.schema)) {
     if (floor[apartmentNumber]) {
       return floor[apartmentNumber].residents;
     }
@@ -35,7 +35,7 @@ export const getResidentsByApartment = (apartmentNumber: number): string[] => {
 export const getNumbersByApartment = (apartmentNumber: number): string[] => {
   const building = loadBuilding();
 
-  for (const floor of Object.values(building)) {
+  for (const floor of Object.values(building.schema)) {
     if (floor[apartmentNumber]) {
       return floor[apartmentNumber].numbers;
     }
