@@ -9,8 +9,14 @@
       "numbers": []
     },
     "3": {
-      "residents": [],
-      "numbers": []
+      "residents": [
+        "evgeniy_logvinov",
+        "123123"
+      ],
+      "numbers": [
+        "123123",
+        "123123"
+      ]
     },
     "4": {
       "residents": [],
@@ -95,7 +101,9 @@
       "numbers": []
     },
     "23": {
-      "residents": [],
+      "residents": [
+        "evgeniy_logvinov"
+      ],
       "numbers": []
     },
     "24": {
@@ -529,7 +537,9 @@
       "numbers": []
     },
     "123": {
-      "residents": [],
+      "residents": [
+        "333"
+      ],
       "numbers": []
     },
     "124": {

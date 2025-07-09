@@ -13,6 +13,7 @@ export const mainKeyboard = {
       [{ text: t.removeResidentByName }], // Button to remove another user by name
       [{ text: t.addPhoneNumber }], // Button to add a phone number
       [{ text: t.removePhoneNumber }], // Button to remove a phone number
+      [{ text: t.generateBuildingImage }], // Button to generate and show building image
     ],
     resize_keyboard: true,
     one_time_keyboard: false

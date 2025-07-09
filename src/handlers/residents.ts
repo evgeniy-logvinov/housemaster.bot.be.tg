@@ -2,9 +2,24 @@ import TelegramBot from 'node-telegram-bot-api';
 import translationsData from '../data/translations.json';
 import { mainKeyboard, cancelKeyboard } from '../handlers/keyboard';
 import { loadBuilding, saveBuilding } from '../data/buildingHelper';
+import { generateSvg } from '../data/generateBuildingSvg';
+import sharp from 'sharp';
 
 const language = (process.env.LANGUAGE as unknown as 'en' | 'ru') || 'en';
 const translations = translationsData[language];
+
+type PendingReply = {
+  step: string;
+  chatId: number;
+  userId: number;
+  data?: any;
+  handler: (msg: TelegramBot.Message) => void;
+};
+
+export const pendingReplies: { [key: string]: PendingReply } = {};
+function getPendingKey(chatId: number, userId: number) {
+  return `${chatId}:${userId}`;
+}
 
 // --- Common utilities ---
 
@@ -14,26 +29,30 @@ function askApartmentNumber(
   onValid: (apartmentNumber: number) => void,
   onCancel?: () => void
 ) {
+  const key = getPendingKey(msg.chat.id, msg.from!.id);
   bot.sendMessage(msg.chat.id, translations.enterApartmentNumber, cancelKeyboard);
 
-  const listener = (response: TelegramBot.Message) => {
-    if (response.text === translations.cancel) {
-      bot.sendMessage(msg.chat.id, translations.welcomeMessage, mainKeyboard);
-      onCancel?.();
-      return;
+  pendingReplies[key] = {
+    step: 'apartmentNumber',
+    chatId: msg.chat.id,
+    userId: msg.from!.id,
+    handler: (response: TelegramBot.Message) => {
+      if (response.from?.id !== msg.from?.id) return; // Only allow the user who started the flow
+      if (response.text === translations.cancel) {
+        bot.sendMessage(msg.chat.id, translations.welcomeMessage, mainKeyboard);
+        delete pendingReplies[key];
+        onCancel?.();
+        return;
+      }
+      const apartmentNumber = parseInt(response.text || '', 10);
+      if (isNaN(apartmentNumber)) {
+        bot.sendMessage(msg.chat.id, translations.invalidApartmentNumber, cancelKeyboard);
+        return;
+      }
+      delete pendingReplies[key];
+      onValid(apartmentNumber);
     }
-
-    const apartmentNumber = parseInt(response.text || '', 10);
-
-    if (isNaN(apartmentNumber)) {
-      bot.sendMessage(msg.chat.id, translations.invalidApartmentNumber, cancelKeyboard);
-      return;
-    }
-
-    onValid(apartmentNumber);
   };
-
-  bot.once('message', listener);
 }
 
 function askResidentName(
@@ -42,25 +61,30 @@ function askResidentName(
   onValid: (residentName: string) => void,
   onCancel?: () => void
 ) {
+  const key = getPendingKey(msg.chat.id, msg.from!.id);
   bot.sendMessage(msg.chat.id, translations.enterResidentName, cancelKeyboard);
 
-  const listener = (response: TelegramBot.Message) => {
-    if (response.text === translations.cancel) {
-      bot.sendMessage(msg.chat.id, translations.welcomeMessage, mainKeyboard);
-      onCancel?.();
-      return;
+  pendingReplies[key] = {
+    step: 'residentName',
+    chatId: msg.chat.id,
+    userId: msg.from!.id,
+    handler: (response: TelegramBot.Message) => {
+      if (response.from?.id !== msg.from?.id) return;
+      if (response.text === translations.cancel) {
+        bot.sendMessage(msg.chat.id, translations.welcomeMessage, mainKeyboard);
+        delete pendingReplies[key];
+        onCancel?.();
+        return;
+      }
+      const residentName = response.text?.trim();
+      if (!residentName) {
+        bot.sendMessage(msg.chat.id, translations.invalidName, cancelKeyboard);
+        return;
+      }
+      delete pendingReplies[key];
+      onValid(residentName);
     }
-
-    const residentName = response.text?.trim();
-    if (!residentName) {
-      bot.sendMessage(msg.chat.id, translations.invalidName, cancelKeyboard);
-      return;
-    }
-
-    onValid(residentName);
   };
-
-  bot.once('message', listener);
 }
 
 function askPhoneNumber(
@@ -69,31 +93,38 @@ function askPhoneNumber(
   onValid: (phone: string) => void,
   onCancel?: () => void
 ) {
-  bot.sendMessage(msg.chat.id, 'Enter a phone number (or send "Cancel" to abort):', cancelKeyboard);
+  const key = getPendingKey(msg.chat.id, msg.from!.id);
+  bot.sendMessage(msg.chat.id, translations.enterPhoneNumber, cancelKeyboard);
 
-  const listener = (response: TelegramBot.Message) => {
-    if (response.text === translations.cancel) {
-      bot.sendMessage(msg.chat.id, translations.welcomeMessage, mainKeyboard);
-      onCancel?.();
-      return;
+  pendingReplies[key] = {
+    step: 'phoneNumber',
+    chatId: msg.chat.id,
+    userId: msg.from!.id,
+    handler: (response: TelegramBot.Message) => {
+      if (response.from?.id !== msg.from?.id) return;
+      if (response.text === translations.cancel) {
+        bot.sendMessage(msg.chat.id, translations.welcomeMessage, mainKeyboard);
+        delete pendingReplies[key];
+        onCancel?.();
+        return;
+      }
+      const phone = response.text?.trim();
+      if (!phone) {
+        bot.sendMessage(msg.chat.id, translations.invalidPhoneNumber, cancelKeyboard);
+        return;
+      }
+      delete pendingReplies[key];
+      onValid(phone);
     }
-
-    const phone = response.text?.trim();
-    if (!phone) {
-      bot.sendMessage(msg.chat.id, 'Please enter a valid phone number.', cancelKeyboard);
-      return;
-    }
-
-    onValid(phone);
   };
-
-  bot.once('message', listener);
 }
 
 // --- Main handlers ---
 
 export const handleAddMeAsResident = (bot: TelegramBot, msg: TelegramBot.Message) => {
   const building = loadBuilding();
+  generateSvg(building);
+
   askApartmentNumber(bot, msg, (apartmentNumber) => {
     const userName = msg.from?.username || msg.from?.first_name || 'Unknown User';
 
@@ -399,4 +430,28 @@ export const handleRemovePhoneNumber = (bot: TelegramBot, msg: TelegramBot.Messa
 
     bot.once('message', listener);
   });
+};
+
+export const handleGenerateBuildingImage = async (bot: TelegramBot, msg: TelegramBot.Message) => {
+  try {
+    const building = loadBuilding();
+    const svgContent = generateSvg(building);
+    const svgBuffer = Buffer.from(svgContent, 'utf-8');
+    const pngBuffer = await sharp(svgBuffer).png().toBuffer();
+
+    bot.sendPhoto(
+      msg.chat.id,
+      pngBuffer,
+      {
+        caption: 'Building map (PNG)',
+        reply_markup: mainKeyboard.reply_markup
+      }
+    );
+  } catch (error) {
+    bot.sendMessage(
+      msg.chat.id,
+      translations.errorGeneratingImage || 'Failed to generate building image. Please try again later.',
+      mainKeyboard
+    );
+  }
 };

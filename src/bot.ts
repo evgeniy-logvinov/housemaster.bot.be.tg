@@ -5,7 +5,7 @@ dotenv.config();
 import TelegramBot from 'node-telegram-bot-api';
 import { mainKeyboard } from './handlers/keyboard';
 import translationsData from './data/translations.json'; // Import translations
-import { handleAddMeAsResident, handleRemoveMeAsResident, handleAddResident, handleGetResidentsByApartment, handleRemoveResidentByName, handleAddPhoneNumber, handleRemovePhoneNumber } from './handlers/residents';
+import { handleAddMeAsResident, handleRemoveMeAsResident, handleAddResident, handleGetResidentsByApartment, handleRemoveResidentByName, handleAddPhoneNumber, handleRemovePhoneNumber, pendingReplies, handleGenerateBuildingImage } from './handlers/residents';
 
 // Load environment variables
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -35,6 +35,13 @@ bot.onText(/\/start/, (msg) => {
 
 // Command handlers
 bot.on('message', (msg) => {
+  if (msg.from && pendingReplies) {
+    const key = `${msg.chat.id}:${msg.from.id}`;
+    if (pendingReplies[key]) {
+      pendingReplies[key].handler(msg);
+      return;
+    }
+  }
   if (msg.text === translations.addMeAsResident) {
     handleAddMeAsResident(bot, msg);
   } else if (msg.text === translations.removeMeAsResident) {
@@ -49,6 +56,8 @@ bot.on('message', (msg) => {
     handleAddPhoneNumber(bot, msg);
   } else if (msg.text === translations.removePhoneNumber) {
     handleRemovePhoneNumber(bot, msg);
+  } else if (msg.text === translations.generateBuildingImage) {
+    handleGenerateBuildingImage(bot, msg);
   }
 });
 

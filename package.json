@@ -17,7 +17,8 @@
   "license": "MIT",
   "dependencies": {
     "dotenv": "^16.4.7",
-    "node-telegram-bot-api": "^0.66.0"
+    "node-telegram-bot-api": "^0.66.0",
+    "sharp": "^0.34.2"
   },
   "devDependencies": {
     "@types/node-telegram-bot-api": "^0.64.8",

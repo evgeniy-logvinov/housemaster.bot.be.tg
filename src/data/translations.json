@@ -22,6 +22,7 @@
     "residentRemoved": "Resident \"{residentName}\" has been removed from apartment {apartmentNumber} on floor {floor}.",
     "removeResidentByName": "Remove Resident by Name",
     "cancel": "Cancel",
+    "errorGeneratingImage": "Failed to generate building image. Please try again later.",
     "addPhoneNumber": "Add Phone Number",
     "enterPhoneNumber": "Enter the phone number:",
     "phoneNumberAdded": "Phone number \"{phone}\" has been added to apartment {apartmentNumber} on floor {floor}.",
@@ -29,7 +30,14 @@
     "removePhoneNumber": "Remove Phone Number",
     "enterPhoneNumberToRemove": "Enter the phone number to remove:",
     "phoneNumberRemoved": "Phone number \"{phone}\" has been removed from apartment {apartmentNumber} on floor {floor}.",
-    "phoneNumberNotFound": "Phone number \"{phone}\" not found in apartment {apartmentNumber} on floor {floor}."
+    "phoneNumberNotFound": "Phone number \"{phone}\" not found in apartment {apartmentNumber} on floor {floor}.",
+    "generateBuildingImage": "Show Building Map",
+    "svgResidents": "{count} residents",
+    "svgFloor": "Floor",
+    "svgApt": "Apt",
+    "svgResidentOne": "resident",
+    "svgResidentFew": "residents",
+    "svgResidentMany": "residents"
   },
   "ru": {
     "welcomeMessage": "Добро пожаловать! Используйте кнопки ниже для управления квартирами и жильцами.",
@@ -54,6 +62,7 @@
     "residentRemoved": "Жилец \"{residentName}\" был удален из квартиры {apartmentNumber} на этаже {floor}.",
     "removeResidentByName": "Удалить жильца по имени",
     "cancel": "Отмена",
+    "errorGeneratingImage": "Не удалось сгенерировать изображение здания. Попробуйте снова позже.",
     "addPhoneNumber": "Добавить номер телефона",
     "enterPhoneNumber": "Введите номер телефона:",
     "phoneNumberAdded": "Номер телефона \"{phone}\" был добавлен в квартиру {apartmentNumber} на этаже {floor}.",
@@ -61,6 +70,13 @@
     "removePhoneNumber": "Удалить номер телефона",
     "enterPhoneNumberToRemove": "Введите номер телефона для удаления:",
     "phoneNumberRemoved": "Номер телефона \"{phone}\" был удален из квартиры {apartmentNumber} на этаже {floor}.",
-    "phoneNumberNotFound": "Номер телефона \"{phone}\" не найден в квартире {apartmentNumber} на этаже {floor}."
+    "phoneNumberNotFound": "Номер телефона \"{phone}\" не найден в квартире {apartmentNumber} на этаже {floor}.",
+    "generateBuildingImage": "Показать карту здания",
+    "svgResidents": "{count} жильцов",
+    "svgFloor": "Этаж",
+    "svgApt": "Кв.",
+    "svgResidentOne": "жилец",
+    "svgResidentFew": "жильца",
+    "svgResidentMany": "жильцов"
   }
 }
