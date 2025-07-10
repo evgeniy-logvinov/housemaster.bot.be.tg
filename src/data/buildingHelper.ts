@@ -15,6 +15,7 @@ export const loadBuilding = (): Building => {
 
 // Save building data to JSON file
 export const saveBuilding = (building: Building) => {
+  building.version = (building.version || 1) + 1;
   fs.writeFileSync(buildingFilePath, JSON.stringify(building, null, 2), 'utf-8');
 };
 
