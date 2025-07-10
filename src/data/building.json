@@ -1,9 +1,11 @@
 {
-  "version": 1,
+  "version": 3,
   "schema": {
     "2": {
       "1": {
-        "residents": [],
+        "residents": [
+          "evgeniy_logvinov"
+        ],
         "numbers": []
       },
       "2": {
@@ -21,7 +23,9 @@
         ]
       },
       "4": {
-        "residents": [],
+        "residents": [
+          "evgeniy_logvinov"
+        ],
         "numbers": []
       },
       "5": {

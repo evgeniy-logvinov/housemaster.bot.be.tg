@@ -185,7 +185,7 @@ export const handleAddMeAsResident = (bot: TelegramBot, msg: TelegramBot.Message
         }
 
         flat.residents.push(userName);
-        saveBuilding(building);
+        await saveBuilding(building);
         // await regenerateBuildingImage(building);
         bot.sendMessage(
           msg.chat.id,
@@ -229,7 +229,7 @@ export const handleRemoveMeAsResident = (bot: TelegramBot, msg: TelegramBot.Mess
         }
 
         flat.residents = flat.residents.filter((resident: string) => resident !== userName);
-        saveBuilding(building);
+        await saveBuilding(building);
         // await regenerateBuildingImage(building);
         bot.sendMessage(
           msg.chat.id,
@@ -260,7 +260,7 @@ export const handleAddResident = (bot: TelegramBot, msg: TelegramBot.Message) =>
           const flat = apartments[apartmentNumber];
           if (flat) {
             flat.residents.push(residentName);
-            saveBuilding(building);
+            await saveBuilding(building);
             // await regenerateBuildingImage(building);
             bot.sendMessage(
               msg.chat.id,
@@ -309,7 +309,7 @@ export const handleAddPhoneNumber = (bot: TelegramBot, msg: TelegramBot.Message)
         const flat = apartments[apartmentNumber];
         if (flat) {
           flat.numbers.push(phone);
-          saveBuilding(building);
+          await saveBuilding(building);
           // await regenerateBuildingImage(building);
           bot.sendMessage(
             msg.chat.id,
@@ -391,7 +391,7 @@ export const handleRemoveResidentByName = (bot: TelegramBot, msg: TelegramBot.Me
           flat.residents = flat.residents.filter((resident: string) => resident !== residentName);
           if (flat.residents.length < before) {
             found = true;
-            saveBuilding(building);
+            await saveBuilding(building);
             // await regenerateBuildingImage(building);
             bot.sendMessage(
               msg.chat.id,
@@ -442,7 +442,7 @@ export const handleRemovePhoneNumber = (bot: TelegramBot, msg: TelegramBot.Messa
           const index = flat.numbers.indexOf(phone);
           if (index !== -1) {
             flat.numbers.splice(index, 1);
-            saveBuilding(building);
+            await saveBuilding(building);
             // await regenerateBuildingImage(building);
             bot.sendMessage(
               msg.chat.id,
