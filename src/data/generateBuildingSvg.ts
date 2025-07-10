@@ -70,7 +70,7 @@ export function generateSvg(data: any, singleFloorMode = false) {
   const width = singleFloorMode
     ? (squareCols * (apartmentWidth + 20) + 50) + margin
     : floorsPerRow * (squareCols * (apartmentWidth + 20) + 50) + margin;
-  const height = floorHeight + 2 * margin;
+  const height = numRows * floorHeight + 2 * margin;
 
   // Start SVG
   let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">\n`;
