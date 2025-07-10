@@ -82,9 +82,14 @@ export function generateSvg(data: any, singleFloorMode = false) {
     const apartments = data[floorNumber];
     const apartmentKeys = Object.keys(apartments).sort((a, b) => Number(a) - Number(b));
 
-    // Для одного этажа всегда row=0, col=0
-    const row = 0;
-    const col = 0;
+    let row, col;
+    if (singleFloorMode) {
+      row = 0;
+      col = 0;
+    } else {
+      row = Math.floor(floorIndex / floorsPerRow);
+      col = floorIndex % floorsPerRow;
+    }
 
     const floorX = margin + col * (squareCols * (apartmentWidth + 20) + 50);
     const floorY = margin + row * floorHeight;
