@@ -5,7 +5,7 @@ dotenv.config();
 import TelegramBot from 'node-telegram-bot-api';
 import { mainKeyboard } from './handlers/keyboard';
 import translationsData from './data/translations.json'; // Import translations
-import { handleAddMeAsResident, handleRemoveMeAsResident, handleAddResident, handleGetResidentsByApartment, handleRemoveResidentByName, handleAddPhoneNumber, handleRemovePhoneNumber, pendingReplies, handleGenerateBuildingImage } from './handlers/residents';
+import { handleAddMeAsResident, handleRemoveMeAsResident, handleAddResident, handleGetResidentsByApartment, handleRemoveResidentByName, handleAddPhoneNumber, handleRemovePhoneNumber, pendingReplies, handleGenerateBuildingImage, handleGenerateFloorImage } from './handlers/residents';
 
 // Load environment variables
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -59,6 +59,8 @@ bot.on('message', (msg) => {
     handleRemovePhoneNumber(bot, msg);
   } else if (msg.text === translations.generateBuildingImage) {
     handleGenerateBuildingImage(bot, msg);
+  } else if (msg.text === translations.generateFloorImage) {
+    handleGenerateFloorImage(bot, msg);
   } else if (msg.text === translations.closeKeyboard) {
     bot.sendMessage(msg.chat.id, translations.keyboardClosed, {
       reply_markup: { remove_keyboard: true }

@@ -32,6 +32,7 @@
     "phoneNumberRemoved": "Phone number \"{phone}\" has been removed from apartment {apartmentNumber} on floor {floor}.",
     "phoneNumberNotFound": "Phone number \"{phone}\" not found in apartment {apartmentNumber} on floor {floor}.",
     "generateBuildingImage": "Show Building Map",
+    "generateFloorImage": "Show Floor Plan",
     "svgResidents": "{count} residents",
     "svgFloor": "Floor",
     "svgApt": "Apt",
@@ -39,7 +40,9 @@
     "svgResidentFew": "residents",
     "svgResidentMany": "residents",
     "closeKeyboard": "Close Keyboard",
-    "keyboardClosed": "Keyboard closed. See you later! To continue, type /start."
+    "keyboardClosed": "Keyboard closed. See you later! To continue, type /start.",
+    "enterFloorNumber": "Enter the floor number:",
+    "invalidFloorNumber": "Please enter a valid floor number."
   },
   "ru": {
     "welcomeMessage": "Добро пожаловать! Я домовой. Используйте кнопки ниже для управления квартирами и жильцами.",
@@ -73,7 +76,8 @@
     "enterPhoneNumberToRemove": "Введите номер телефона для удаления:",
     "phoneNumberRemoved": "Номер телефона \"{phone}\" был удален из квартиры {apartmentNumber} на этаже {floor}.",
     "phoneNumberNotFound": "Номер телефона \"{phone}\" не найден в квартире {apartmentNumber} на этаже {floor}.",
-    "generateBuildingImage": "Показать карту здания",
+    "generateBuildingImage": "Показать карту здания(Займет какое то время)",
+    "generateFloorImage": "Показать схему этажа",
     "svgResidents": "{count} жильцов",
     "svgFloor": "Этаж",
     "svgApt": "Кв.",
@@ -81,6 +85,8 @@
     "svgResidentFew": "жильца",
     "svgResidentMany": "жильцов",
     "closeKeyboard": "Закрыть клавиатуру",
-    "keyboardClosed": "Клавиатура закрыта. Домовой идет спать. Увидимся позже! Чтобы продолжить, введите /start или 'привет домовой'."
+    "keyboardClosed": "Клавиатура закрыта. Домовой идет спать. Увидимся позже! Чтобы продолжить, введите /start или 'привет домовой'.",
+    "enterFloorNumber": "Введите номер этажа:",
+    "invalidFloorNumber": "Пожалуйста, введите корректный номер этажа."
   }
 }

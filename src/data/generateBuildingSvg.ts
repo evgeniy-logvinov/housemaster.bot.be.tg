@@ -62,14 +62,15 @@ const squareCols = 2;
 const floorsPerRow = 6; // Количество этажей в ряду
 
 // Generate SVG content
-export function generateSvg(data: any) {
-  console.log('Generating SVG for building data');
+export function generateSvg(data: any, singleFloorMode = false) {
   const floors = Object.keys(data).sort((a, b) => Number(a) - Number(b));
-  const numRows = Math.ceil(floors.length / floorsPerRow);
+  const numRows = singleFloorMode ? 1 : Math.ceil(floors.length / floorsPerRow);
 
-  // Ширина SVG: 6 этажей в ряд
-  const width = floorsPerRow * (squareCols * (apartmentWidth + 20) + 50) + margin;
-  const height = numRows * floorHeight + 2 * margin;
+  // Если только один этаж — ширина только для одного этажа, иначе как раньше
+  const width = singleFloorMode
+    ? (squareCols * (apartmentWidth + 20) + 50) + margin
+    : floorsPerRow * (squareCols * (apartmentWidth + 20) + 50) + margin;
+  const height = floorHeight + 2 * margin;
 
   // Start SVG
   let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">\n`;
@@ -81,25 +82,18 @@ export function generateSvg(data: any) {
     const apartments = data[floorNumber];
     const apartmentKeys = Object.keys(apartments).sort((a, b) => Number(a) - Number(b));
 
-    // Координаты "этажа" в сетке
-    const row = Math.floor(floorIndex / floorsPerRow);
-    const col = floorIndex % floorsPerRow;
+    // Для одного этажа всегда row=0, col=0
+    const row = 0;
+    const col = 0;
 
-    // Смещение этажа по X и Y
-    const floorX = margin + col * (squareCols * (apartmentWidth + 20) + 50); // 50 - отступ между этажами по горизонтали
+    const floorX = margin + col * (squareCols * (apartmentWidth + 20) + 50);
     const floorY = margin + row * floorHeight;
 
-    // Название этажа
     svg += `  <text x="${floorX}" y="${floorY + textOffset}" fill="#fff" font-family="Arial, sans-serif" font-size="20" font-weight="bold" letter-spacing="1">${t.svgFloor} ${floorNumber}</text>\n`;
 
-    // Квадратные координаты для 6 квартир (по часовой стрелке, начиная с левого нижнего)
     const squarePositions = [
-      {col: 0, row: 2}, // 1
-      {col: 0, row: 1}, // 2
-      {col: 0, row: 0}, // 3
-      {col: 1, row: 0}, // 4
-      {col: 1, row: 1}, // 5
-      {col: 1, row: 2}, // 6
+      {col: 0, row: 2}, {col: 0, row: 1}, {col: 0, row: 0},
+      {col: 1, row: 0}, {col: 1, row: 1}, {col: 1, row: 2},
     ];
 
     apartmentKeys.forEach((apartmentNumber, aptIndex) => {
@@ -107,34 +101,23 @@ export function generateSvg(data: any) {
       const isOccupied = apartment.residents && apartment.residents.length > 0;
       const pos = squarePositions[aptIndex];
 
-      // Координаты квартиры относительно этажа
       const x = floorX + pos.col * (apartmentWidth + 20);
       const y = floorY + textOffset + apartmentsOffsetY + pos.row * (apartmentHeight + rowGap);
 
-      // Draw apartment rectangle with shadow and rounded corners
       svg += `  <rect x="${x}" y="${y}" width="${apartmentWidth - 10}" height="${apartmentHeight}" rx="14" ry="14" fill="${isOccupied ? occupiedColor : emptyColor}" stroke="${borderColor}" stroke-width="1.5" filter="url(#shadow)" />\n`;
-
-      // В рендере номера квартиры используйте accentColor:
       svg += `  <text x="${x + 10}" y="${y + 24}" fill="${accentColor}" font-family="Arial, sans-serif" font-size="13" font-weight="bold">${t.svgApt} ${apartmentNumber}</text>\n`;
 
-      // Для остального текста используйте occupiedTextColor или emptyTextColor в зависимости от isOccupied.
-
-      // Draw resident count and names
       if (isOccupied) {
         const residentLabel = getResidentLabel(apartment.residents.length, language);
         const residentsText = `${apartment.residents.length} ${residentLabel}`;
         svg += `  <text x="${x + 10}" y="${y + 44}" fill="${occupiedTextColor}" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="bold">${residentsText}</text>\n`;
-        // Draw resident names, each on a new line
         apartment.residents.forEach((name: string, idx: number) => {
           svg += `  <text x="${x + 10}" y="${y + 64 + idx * 16}" fill="${occupiedTextColor}" font-family="Segoe UI, Arial, sans-serif" font-size="12">${name}</text>\n`;
         });
-      } else {
-        // ...используйте emptyTextColor для текста в пустых квартирах...
       }
     });
   });
 
-  // Close SVG
   svg += '</svg>';
   return svg;
 }

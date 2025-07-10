@@ -489,3 +489,63 @@ export const handleGenerateBuildingImage = async (bot: TelegramBot, msg: Telegra
     bot.sendMessage(msg.chat.id, translations.errorGeneratingImage, mainKeyboard);
   }
 };
+
+export const handleGenerateFloorImage = (bot: TelegramBot, msg: TelegramBot.Message) => {
+  const building = loadBuilding();
+  const version = building.version || 1;
+  const askFloor = () => {
+    bot.sendMessage(msg.chat.id, translations.enterFloorNumber || "Введите номер этажа:", cancelKeyboard);
+
+    const listener = async (response: TelegramBot.Message) => {
+      if (response.text === translations.cancel) {
+        bot.sendMessage(msg.chat.id, translations.welcomeMessage, mainKeyboard);
+        return;
+      }
+      const floorNumber = response.text?.trim();
+      const floorKey = Number(floorNumber);
+      if (
+        !floorNumber ||
+        isNaN(floorKey) ||
+        !Object.prototype.hasOwnProperty.call(building.schema, floorKey)
+      ) {
+        bot.sendMessage(
+          msg.chat.id,
+          translations.invalidFloorNumber || "Некорректный номер этажа.",
+          cancelKeyboard
+        );
+        askFloor();
+        return;
+      }
+
+      // File paths with version and floor number
+      const svgPath = require('path').join(__dirname, `../data/building.v${version}.floor${floorKey}.svg`);
+      const pngPath = require('path').join(__dirname, `../data/building.v${version}.floor${floorKey}.png`);
+      const fs = require('fs');
+      const sharp = require('sharp');
+
+      let pngBuffer;
+      if (fs.existsSync(pngPath)) {
+        pngBuffer = fs.readFileSync(pngPath);
+      } else {
+        const floorData: any = { [floorKey]: building.schema[floorKey] };
+        const svgContent = generateSvg(floorData, true);
+        fs.writeFileSync(svgPath, svgContent);
+        pngBuffer = await sharp(Buffer.from(svgContent, 'utf-8')).png().toBuffer();
+        fs.writeFileSync(pngPath, pngBuffer);
+      }
+
+      await bot.sendPhoto(
+        msg.chat.id,
+        pngBuffer,
+        {
+          caption: `${translations.svgFloor} ${floorNumber}`,
+          ...mainKeyboard
+        }
+      );
+    };
+
+    bot.once('message', listener);
+  };
+
+  askFloor();
+};
