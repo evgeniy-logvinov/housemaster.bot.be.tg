@@ -3,9 +3,7 @@
   "schema": {
     "2": {
       "1": {
-        "residents": [
-          "evgeniy_logvinov"
-        ],
+        "residents": [],
         "numbers": []
       },
       "2": {
@@ -13,19 +11,11 @@
         "numbers": []
       },
       "3": {
-        "residents": [
-          "evgeniy_logvinov",
-          "123123"
-        ],
-        "numbers": [
-          "123123",
-          "123123"
-        ]
+        "residents": [],
+        "numbers": []
       },
       "4": {
-        "residents": [
-          "evgeniy_logvinov"
-        ],
+        "residents": [],
         "numbers": []
       },
       "5": {
@@ -33,9 +23,7 @@
         "numbers": []
       },
       "6": {
-        "residents": [
-          "evgeniy_logvinov"
-        ],
+        "residents": [],
         "numbers": []
       }
     },
@@ -109,9 +97,7 @@
         "numbers": []
       },
       "23": {
-        "residents": [
-          "evgeniy_logvinov"
-        ],
+        "residents": [],
         "numbers": []
       },
       "24": {
@@ -297,9 +283,7 @@
         "numbers": []
       },
       "66": {
-        "residents": [
-          "evgeniy_logvinov"
-        ],
+        "residents": [],
         "numbers": []
       }
     },
@@ -447,9 +431,7 @@
         "numbers": []
       },
       "100": {
-        "residents": [
-          "evgeniy_logvinov"
-        ],
+        "residents": [],
         "numbers": []
       },
       "101": {
