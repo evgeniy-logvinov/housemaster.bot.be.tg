@@ -141,8 +141,15 @@ bot.on('callback_query', async (query) => {
     );
     try {
       await bot.deleteMessage(query.message!.chat.id, query.message!.message_id);
-    } catch (e) {
-      logger.error(`Failed to delete inline keyboard message: ${e}`);
+    } catch (e: any) {
+      if (e.response && e.response.statusCode === 400) {
+        logger.warn(`Message already deleted or invalid: chat_id=${query.message!.chat.id}, message_id=${query.message!.message_id}`);
+      } else if (e.response && e.response.statusCode === 403) {
+        logger.error(`Bot lacks permission to delete message: chat_id=${query.message!.chat.id}, message_id=${query.message!.message_id}`);
+      } else {
+        logger.error(`Unexpected error while deleting inline keyboard message: ${e.message}`);
+      }
+      await bot.answerCallbackQuery(query.id, { text: translations.errorDeletingMessage });
     }
     await bot.answerCallbackQuery(query.id);
   }
