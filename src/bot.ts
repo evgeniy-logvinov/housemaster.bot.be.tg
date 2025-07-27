@@ -142,7 +142,7 @@ bot.on('callback_query', async (query) => {
     try {
       await bot.deleteMessage(query.message!.chat.id, query.message!.message_id);
     } catch (e) {
-      logger.error(`Failed to delete message: ${e}`);
+      logger.error(`Failed to delete inline keyboard message: ${e}`);
     }
     await bot.answerCallbackQuery(query.id);
   }
