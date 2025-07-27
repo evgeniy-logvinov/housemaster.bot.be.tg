@@ -4,7 +4,7 @@ dotenv.config();
 
 import TelegramBot from 'node-telegram-bot-api';
 import { mainKeyboard } from './handlers/keyboard';
-import translationsData from './data/translations.json'; // Import translations
+import translationsData from './dictionary/translations.json'; // Import translations
 import { handleAddMeAsResident, handleRemoveMeAsResident, handleAddResident, handleGetResidentsByApartment, handleRemoveResidentByName, handleAddPhoneNumber, handleRemovePhoneNumber, pendingReplies, handleGenerateBuildingImage, handleGenerateFloorImage } from './handlers/residents';
 import { generateSvg } from './data/generateBuildingSvg';
 import sharp from 'sharp';

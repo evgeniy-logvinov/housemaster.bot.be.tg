@@ -7,8 +7,13 @@ House master telegram bot made using copilot(for testing purpose)
 
 ```
 TELEGRAM_BOT_TOKEN=
-LANGUAGE=
+LANGUAGE=ru/en
+YANDEX_DISK_TOKEN=
 ```
+
+Yandex token to save file on disk rach time when we update version
+The same for Google drive
+If token not set, just skip this token
 
 # EN
 

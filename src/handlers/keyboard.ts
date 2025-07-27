@@ -1,4 +1,4 @@
-import translations from '../data/translations.json';
+import translations from '../dictionary/translations.json';
 
 const language = (process.env.LANGUAGE as unknown as 'en' | 'ru') || 'en'; // Default to English if LANGUAGE is not set
 const t = translations[language]; // Select translations based on the language

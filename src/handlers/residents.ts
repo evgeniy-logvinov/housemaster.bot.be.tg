@@ -1,17 +1,13 @@
 import TelegramBot from 'node-telegram-bot-api';
-import translationsData from '../data/translations.json';
+import translationsData from '../dictionary/translations.json'; // Import translations
 import { mainKeyboard, cancelKeyboard } from '../handlers/keyboard';
 import { loadBuilding, saveBuilding } from '../data/buildingHelper';
 import { generateSvg } from '../data/generateBuildingSvg';
 import sharp from 'sharp';
-import path from 'path';
-import fs from 'fs';
 import { getFloorInlineKeyboard } from './keyboard';
 
 const language = (process.env.LANGUAGE as unknown as 'en' | 'ru') || 'en';
 const translations = translationsData[language];
-
-const buildingImagePath = path.join(__dirname, '../data/building.png');
 
 type PendingReply = {
   step: string;
@@ -25,9 +21,6 @@ export const pendingReplies: { [key: string]: PendingReply } = {};
 function getPendingKey(chatId: number, userId: number) {
   return `${chatId}:${userId}`;
 }
-
-let cachedBuildingPng: Buffer | null = null;
-let cachedBuildingHash: string | null = null;
 
 // --- Common utilities ---
 

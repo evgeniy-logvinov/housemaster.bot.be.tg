@@ -1,75 +1,20 @@
 import fs from 'fs';
 import path from 'path';
 import { Building } from '../types';
-import { google } from 'googleapis';
 import dotenv from 'dotenv';
 import { generateSvg } from '../data/generateBuildingSvg';
 import sharp from 'sharp';
-import translationsData from '../data/translations.json';
+import translationsData from '../dictionary/translations.json';
 import { mainKeyboard } from '../handlers/keyboard';
 import TelegramBot from 'node-telegram-bot-api';
+import { uploadToYandexDisk } from '../backup/yandex';
 
 dotenv.config();
-
 
 const language = (process.env.LANGUAGE as unknown as 'en' | 'ru') || 'en';
 const translations = translationsData[language];
 
 const buildingFilePath = path.join(__dirname, 'building.json');
-const DRIVE_FOLDER_ID = '1YMk_ULhjGT_C8x_osQTNjiOIT542inRA';
-
-// Build credentials from env
-function getServiceAccountFromEnv() {
-  return {
-    type: 'service_account',
-    project_id: process.env.GOOGLE_PROJECT_ID,
-    private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
-    private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    client_id: process.env.GOOGLE_CLIENT_ID,
-    auth_uri: process.env.GOOGLE_AUTH_URI,
-    token_uri: process.env.GOOGLE_TOKEN_URI,
-    auth_provider_x509_cert_url: process.env.GOOGLE_AUTH_PROVIDER_X509_CERT_URL,
-    client_x509_cert_url: process.env.GOOGLE_CLIENT_X509_CERT_URL,
-  };
-}
-
-async function getDriveClient() {
-  const auth = new google.auth.GoogleAuth({
-    credentials: getServiceAccountFromEnv(),
-    scopes: ['https://www.googleapis.com/auth/drive.file'],
-  });
-  return google.drive({ version: 'v3', auth });
-}
-
-// Upload file to Google Drive
-async function uploadToDrive(localPath: string, version: number) {
-  const drive = await getDriveClient();
-  const fileName = `building.v${version}.json`;
-  const fileMetadata = {
-    name: fileName,
-    parents: [DRIVE_FOLDER_ID],
-  };
-  const media = {
-    mimeType: 'application/json',
-    body: fs.createReadStream(localPath),
-  };
-
-  // Optional: delete previous file with same name (to avoid duplicates)
-  const existing = await drive.files.list({
-    q: `'${DRIVE_FOLDER_ID}' in parents and name='${fileName}' and trashed=false`,
-    fields: 'files(id, name)',
-  });
-  if (existing.data.files && existing.data.files.length > 0) {
-    await drive.files.delete({ fileId: existing.data.files[0].id! });
-  }
-
-  await drive.files.create({
-    requestBody: fileMetadata,
-    media,
-    fields: 'id',
-  });
-}
 
 // Load building data from JSON file
 export const loadBuilding = (): Building => {
@@ -84,12 +29,12 @@ export const loadBuilding = (): Building => {
 export const saveBuilding = async (building: Building) => {
   building.version = (building.version || 1) + 1;
   fs.writeFileSync(buildingFilePath, JSON.stringify(building, null, 2), 'utf-8');
-  // try {
-  //   await uploadToDrive(buildingFilePath, building.version);
-  //   console.log(`building.json uploaded to Google Drive as building.v${building.version}.json`);
-  // } catch (err) {
-  //   console.error('Failed to upload building.json to Google Drive:', err);
-  // }
+  // Upload to Yandex Disk and don't wait for completion
+  const remotePath = `/housemaster/building.v${building.version}.json`;
+  uploadToYandexDisk(buildingFilePath, remotePath)
+    .then(() => console.log('building.json uploaded to Yandex Disk'))
+    .catch((err) => console.error('Failed to upload building.json:', err));
+  // Here you can immediately return/respond to the user
 };
 
 // Get residents by apartment number
