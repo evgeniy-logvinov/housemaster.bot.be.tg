@@ -58,6 +58,9 @@ const floorsPerRow = 6; // Количество этажей в ряду
 
 // Generate SVG content
 export function generateSvg(data: any, singleFloorMode = false, floorNumber?: number) {
+  if (singleFloorMode && floorNumber === undefined) {
+    throw new Error("floorNumber must be defined when singleFloorMode is true.");
+  }
   let floors: string[];
   if (singleFloorMode && floorNumber !== undefined) {
     floors = [floorNumber.toString()];
