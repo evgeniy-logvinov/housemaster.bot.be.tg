@@ -12,6 +12,7 @@ import sharp from 'sharp';
 // Load environment variables
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const language = (process.env.LANGUAGE as unknown as 'en' | 'ru') || 'en'; // Default to English if LANGUAGE is not set
+const debug = Boolean(process.env.DEBUG) || false; // Default to false if DEBUG is not set
 
 if (!token) {
   throw new Error('TELEGRAM_BOT_TOKEN is not defined in the environment variables.');
@@ -24,7 +25,11 @@ if (!translationsData[language]) {
 
 const translations = translationsData[language]; // Select translations based on the language
 console.log('Selected language:', language);
-console.log('Translations:', translations);
+console.log('Debug mode:', debug);
+
+if (debug) {
+  console.log('Translations:', translations);
+}
 
 // Initialize bot
 const bot = new TelegramBot(token, { polling: true });
