@@ -450,7 +450,7 @@ export const handleGenerateBuildingImage = async (bot: TelegramBot, msg: Telegra
 export const handleGenerateFloorImage = (bot: TelegramBot, msg: TelegramBot.Message) => {
   bot.sendMessage(
     msg.chat.id,
-    translations.enterFloorNumber || "Выберите этаж:",
+    translations.enterFloorNumber,
     getFloorInlineKeyboard()
   );
 };
