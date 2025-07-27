@@ -30,9 +30,14 @@ export const cancelKeyboard = {
   },
 };
 
+const FLOOR_RANGE = {
+  min: parseInt(process.env.FLOOR_MIN || '2', 10),
+  max: parseInt(process.env.FLOOR_MAX || '23', 10),
+};
+
 export function getFloorInlineKeyboard() {
   const buttons = [];
-  for (let i = 2; i <= 23; i++) {
+  for (let i = FLOOR_RANGE.min; i <= FLOOR_RANGE.max; i++) {
     buttons.push([{ text: i.toString(), callback_data: `floor_${i}` }]);
   }
   return {
