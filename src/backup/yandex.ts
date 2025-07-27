@@ -113,7 +113,7 @@ function extractErrorMessage(err: unknown): string {
     return err;
   }
   if (isErrorMessage(err)) {
-    return (err as any).message;
+    return (err as { message: string }).message;
   }
   try {
     return JSON.stringify(err);
