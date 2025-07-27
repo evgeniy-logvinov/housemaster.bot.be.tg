@@ -112,7 +112,7 @@ function extractErrorMessage(err: unknown): string {
   if (typeof err === 'string') {
     return err;
   }
-  if (typeof err === 'object' && err !== null && 'message' in err && typeof (err as any).message === 'string') {
+  if (isErrorMessage(err)) {
     return (err as any).message;
   }
   try {
@@ -120,4 +120,8 @@ function extractErrorMessage(err: unknown): string {
   } catch {
     return String(err);
   }
+}
+
+function isErrorMessage(err: unknown): boolean {
+  return typeof err === 'object' && err !== null && 'message' in err && typeof (err as any).message === 'string';
 }
