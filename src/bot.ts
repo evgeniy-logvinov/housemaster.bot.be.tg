@@ -9,6 +9,7 @@ import { handleAddMeAsResident, handleRemoveMeAsResident, handleAddResident, han
 import { generateSvg } from './data/generateBuildingSvg';
 import sharp from 'sharp';
 import logger from './logger';
+import { loadBuilding } from './data/buildingHelper';
 
 // Load environment variables
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -121,7 +122,16 @@ bot.on('callback_query', async (query) => {
   const data = query.data || '';
   if (data.startsWith('floor_')) {
     const floorNumber = Number(data.replace('floor_', ''));
-    const building = require('./data/building.json');
+    let building;
+    
+    try {
+      building = loadBuilding();
+    } catch (error) {
+      logger.error(`Failed to load building data: ${error}`);
+      await bot.answerCallbackQuery(query.id, { text: translations.errorLoadingBuilding });
+      return;
+    }
+    
     const svgContent = generateSvg(building.schema, true, floorNumber);
     const pngBuffer = await sharp(Buffer.from(svgContent, 'utf-8')).png().toBuffer();
     await bot.sendPhoto(

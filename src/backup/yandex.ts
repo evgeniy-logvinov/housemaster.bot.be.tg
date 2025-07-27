@@ -10,7 +10,13 @@ export async function uploadToYandexDisk(localPath: string, remotePath: string) 
     return;
   }
 
-  const fileBuffer = fs.readFileSync(localPath);
+  let fileBuffer: Buffer;
+  try {
+    fileBuffer = fs.readFileSync(localPath);
+  } catch (err) {
+    logger.error(`Failed to read file at ${localPath}: ${err instanceof Error ? err.message : String(err)}`);
+    return;
+  }
 
   // 1. Получить ссылку для загрузки
   const uploadUrl = await getUploadUrl(remotePath);

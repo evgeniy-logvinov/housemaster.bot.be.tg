@@ -1,10 +1,9 @@
 import TelegramBot from 'node-telegram-bot-api';
 import translationsData from '../dictionary/translations.json'; // Import translations
-import { mainKeyboard, cancelKeyboard } from '../handlers/keyboard';
+import { mainKeyboard, cancelKeyboard, getFloorInlineKeyboard } from './keyboard';
 import { loadBuilding, saveBuilding } from '../data/buildingHelper';
 import { generateSvg } from '../data/generateBuildingSvg';
 import sharp from 'sharp';
-import { getFloorInlineKeyboard } from './keyboard';
 
 const language = (process.env.LANGUAGE as unknown as 'en' | 'ru') || 'en';
 const translations = translationsData[language];

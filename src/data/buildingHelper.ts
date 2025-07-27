@@ -64,14 +64,3 @@ export const getNumbersByApartment = (apartmentNumber: number): string[] => {
 
   throw new Error(`Apartment number ${apartmentNumber} not found.`);
 };
-
-export const handleGenerateBuildingImage = async (bot: TelegramBot, msg: TelegramBot.Message) => {
-  try {
-    const building = loadBuilding();
-    const svgContent = generateSvg(building.schema);
-    const pngBuffer = await sharp(Buffer.from(svgContent, 'utf-8')).png().toBuffer();
-    await bot.sendPhoto(msg.chat.id, pngBuffer, { caption: 'Карта здания' });
-  } catch (error) {
-    bot.sendMessage(msg.chat.id, translations.errorGeneratingImage, mainKeyboard);
-  }
-};
