@@ -29,3 +29,15 @@ export const cancelKeyboard = {
     one_time_keyboard: true,
   },
 };
+
+export function getFloorInlineKeyboard() {
+  const buttons = [];
+  for (let i = 2; i <= 23; i++) {
+    buttons.push([{ text: i.toString(), callback_data: `floor_${i}` }]);
+  }
+  return {
+    reply_markup: {
+      inline_keyboard: buttons
+    }
+  };
+}

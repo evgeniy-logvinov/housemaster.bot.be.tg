@@ -3,7 +3,17 @@ import path from 'path';
 import { Building } from '../types';
 import { google } from 'googleapis';
 import dotenv from 'dotenv';
+import { generateSvg } from '../data/generateBuildingSvg';
+import sharp from 'sharp';
+import translationsData from '../data/translations.json';
+import { mainKeyboard } from '../handlers/keyboard';
+import TelegramBot from 'node-telegram-bot-api';
+
 dotenv.config();
+
+
+const language = (process.env.LANGUAGE as unknown as 'en' | 'ru') || 'en';
+const translations = translationsData[language];
 
 const buildingFilePath = path.join(__dirname, 'building.json');
 const DRIVE_FOLDER_ID = '1YMk_ULhjGT_C8x_osQTNjiOIT542inRA';
@@ -74,12 +84,12 @@ export const loadBuilding = (): Building => {
 export const saveBuilding = async (building: Building) => {
   building.version = (building.version || 1) + 1;
   fs.writeFileSync(buildingFilePath, JSON.stringify(building, null, 2), 'utf-8');
-  try {
-    await uploadToDrive(buildingFilePath, building.version);
-    console.log(`building.json uploaded to Google Drive as building.v${building.version}.json`);
-  } catch (err) {
-    console.error('Failed to upload building.json to Google Drive:', err);
-  }
+  // try {
+  //   await uploadToDrive(buildingFilePath, building.version);
+  //   console.log(`building.json uploaded to Google Drive as building.v${building.version}.json`);
+  // } catch (err) {
+  //   console.error('Failed to upload building.json to Google Drive:', err);
+  // }
 };
 
 // Get residents by apartment number
@@ -106,4 +116,15 @@ export const getNumbersByApartment = (apartmentNumber: number): string[] => {
   }
 
   throw new Error(`Apartment number ${apartmentNumber} not found.`);
+};
+
+export const handleGenerateBuildingImage = async (bot: TelegramBot, msg: TelegramBot.Message) => {
+  try {
+    const building = loadBuilding();
+    const svgContent = generateSvg(building.schema);
+    const pngBuffer = await sharp(Buffer.from(svgContent, 'utf-8')).png().toBuffer();
+    await bot.sendPhoto(msg.chat.id, pngBuffer, { caption: 'Карта здания' });
+  } catch (error) {
+    bot.sendMessage(msg.chat.id, translations.errorGeneratingImage, mainKeyboard);
+  }
 };

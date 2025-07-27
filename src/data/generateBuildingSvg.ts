@@ -1,11 +1,7 @@
-import fs from 'fs';
 import translations from './translations.json';
 
 const language = (process.env.LANGUAGE as unknown as 'en' | 'ru') || 'en';
 const t = translations[language];
-
-// Load JSON data
-const buildingData = require('./building.json');
 
 // Configuration
 const floorBottomPadding = 30; // Extra space after apartments
@@ -17,7 +13,6 @@ const floorHeight = apartmentsOffsetY + (apartmentHeight * squareRows) + (rowGap
 const apartmentWidth = 140; // Width of each apartment
 const margin = 20; // Margin around the SVG
 const textOffset = 24; // Offset for text labels (увеличено для сдвига названия этажа ниже)
-const labelToApartmentOffset = 20; // Offset between label and apartment (increased)
 
 // Updated colors and styles
 const emptyColor = '#12343b'; // Night Blue Shadow для пустых квартир
@@ -62,8 +57,13 @@ const squareCols = 2;
 const floorsPerRow = 6; // Количество этажей в ряду
 
 // Generate SVG content
-export function generateSvg(data: any, singleFloorMode = false) {
-  const floors = Object.keys(data).sort((a, b) => Number(a) - Number(b));
+export function generateSvg(data: any, singleFloorMode = false, floorNumber?: number) {
+  let floors: string[];
+  if (singleFloorMode && floorNumber !== undefined) {
+    floors = [floorNumber.toString()];
+  } else {
+    floors = Object.keys(data).sort((a, b) => Number(a) - Number(b));
+  }
   const numRows = singleFloorMode ? 1 : Math.ceil(floors.length / floorsPerRow);
 
   // Если только один этаж — ширина только для одного этажа, иначе как раньше
@@ -126,8 +126,3 @@ export function generateSvg(data: any, singleFloorMode = false) {
   svg += '</svg>';
   return svg;
 }
-
-// Generate and save the SVG
-const svgContent = generateSvg(buildingData.schema);
-fs.writeFileSync('building.svg', svgContent);
-console.log('SVG generated: building.svg');

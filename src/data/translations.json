@@ -42,7 +42,9 @@
     "closeKeyboard": "Close Keyboard",
     "keyboardClosed": "Keyboard closed. See you later! To continue, type /start.",
     "enterFloorNumber": "Enter the floor number:",
-    "invalidFloorNumber": "Please enter a valid floor number."
+    "invalidFloorNumber": "Please enter a valid floor number.",
+    "privateCommandInstruction": "Please continue this command in a private chat with the bot @houseMasterRebekkaBot. Press /start.",
+    "privateCommandGroupHint": "To continue, go to a private chat with the bot @houseMasterRebekkaBot."
   },
   "ru": {
     "welcomeMessage": "Добро пожаловать! Я домовой. Используйте кнопки ниже для управления квартирами и жильцами.",
@@ -87,6 +89,8 @@
     "closeKeyboard": "Закрыть клавиатуру",
     "keyboardClosed": "Клавиатура закрыта. Домовой идет спать. Увидимся позже! Чтобы продолжить, введите /start или 'привет домовой'.",
     "enterFloorNumber": "Введите номер этажа:",
-    "invalidFloorNumber": "Пожалуйста, введите корректный номер этажа."
+    "invalidFloorNumber": "Пожалуйста, введите корректный номер этажа.",
+    "privateCommandInstruction": "Пожалуйста, продолжите выполнение команды в личных сообщениях с ботом @houseMasterRebekkaBot. Нажмите /start.",
+    "privateCommandGroupHint": "Для продолжения работы перейдите в личные сообщения с ботом @houseMasterRebekkaBot."
   }
 }

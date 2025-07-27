@@ -6,6 +6,8 @@ import TelegramBot from 'node-telegram-bot-api';
 import { mainKeyboard } from './handlers/keyboard';
 import translationsData from './data/translations.json'; // Import translations
 import { handleAddMeAsResident, handleRemoveMeAsResident, handleAddResident, handleGetResidentsByApartment, handleRemoveResidentByName, handleAddPhoneNumber, handleRemovePhoneNumber, pendingReplies, handleGenerateBuildingImage, handleGenerateFloorImage } from './handlers/residents';
+import { generateSvg } from './data/generateBuildingSvg';
+import sharp from 'sharp';
 
 // Load environment variables
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -33,9 +35,27 @@ bot.onText(/\/start|привет ?домовой/i, (msg) => {
   bot.sendMessage(chatId, translations.welcomeMessage, mainKeyboard);
 });
 
+function isPrivate(msg: TelegramBot.Message) {
+  return msg.chat.type === 'private';
+}
+
+function redirectToPrivate(bot: TelegramBot, msg: TelegramBot.Message) {
+  bot.sendMessage(
+    msg.from!.id,
+    translations.privateCommandInstruction
+  );
+  if (msg.chat.type !== 'private') {
+    bot.sendMessage(
+      msg.chat.id,
+      translations.privateCommandGroupHint
+    );
+  }
+}
+
 // Command handlers
 bot.on('message', (msg) => {
   console.log('Received message:', msg.text, 'from:', msg.from?.username, 'chat:', msg.chat.id);
+
   if (msg.from && pendingReplies) {
     const key = `${msg.chat.id}:${msg.from.id}`;
     if (pendingReplies[key]) {
@@ -43,21 +63,44 @@ bot.on('message', (msg) => {
       return;
     }
   }
-  if (msg.text === translations.addMeAsResident) {
-    handleAddMeAsResident(bot, msg);
-  } else if (msg.text === translations.removeMeAsResident) {
-    handleRemoveMeAsResident(bot, msg);
-  } else if (msg.text === translations.getResidentsByApartment) {
-    handleGetResidentsByApartment(bot, msg);
-  } else if (msg.text === translations.addResident) {
-    handleAddResident(bot, msg);
-  } else if (msg.text === translations.removeResidentByName) {
-    handleRemoveResidentByName(bot, msg);
-  } else if (msg.text === translations.addPhoneNumber) {
-    handleAddPhoneNumber(bot, msg);
-  } else if (msg.text === translations.removePhoneNumber) {
-    handleRemovePhoneNumber(bot, msg);
-  } else if (msg.text === translations.generateBuildingImage) {
+
+  // Команды, которые должны работать только в личке
+  const privateOnly = [
+    translations.addMeAsResident,
+    translations.removeMeAsResident,
+    translations.getResidentsByApartment,
+    translations.addResident,
+    translations.removeResidentByName,
+    translations.addPhoneNumber,
+    translations.removePhoneNumber,
+  ];
+
+  if (privateOnly.includes(msg.text || '')) {
+    if (!isPrivate(msg)) {
+      redirectToPrivate(bot, msg);
+      return;
+    }
+    // Обычная логика для лички
+    if (msg.text === translations.addMeAsResident) {
+      handleAddMeAsResident(bot, msg);
+    } else if (msg.text === translations.removeMeAsResident) {
+      handleRemoveMeAsResident(bot, msg);
+    } else if (msg.text === translations.getResidentsByApartment) {
+      handleGetResidentsByApartment(bot, msg);
+    } else if (msg.text === translations.addResident) {
+      handleAddResident(bot, msg);
+    } else if (msg.text === translations.removeResidentByName) {
+      handleRemoveResidentByName(bot, msg);
+    } else if (msg.text === translations.addPhoneNumber) {
+      handleAddPhoneNumber(bot, msg);
+    } else if (msg.text === translations.removePhoneNumber) {
+      handleRemovePhoneNumber(bot, msg);
+    }
+    return;
+  }
+
+  // Остальные команды — как раньше
+  if (msg.text === translations.generateBuildingImage) {
     handleGenerateBuildingImage(bot, msg);
   } else if (msg.text === translations.generateFloorImage) {
     handleGenerateFloorImage(bot, msg);
@@ -65,6 +108,27 @@ bot.on('message', (msg) => {
     bot.sendMessage(msg.chat.id, translations.keyboardClosed, {
       reply_markup: { remove_keyboard: true }
     });
+  }
+});
+
+bot.on('callback_query', async (query) => {
+  const data = query.data || '';
+  if (data.startsWith('floor_')) {
+    const floorNumber = Number(data.replace('floor_', ''));
+    const building = require('./data/building.json');
+    const svgContent = generateSvg(building.schema, true, floorNumber);
+    const pngBuffer = await sharp(Buffer.from(svgContent, 'utf-8')).png().toBuffer();
+    await bot.sendPhoto(
+      query.message!.chat.id,
+      pngBuffer,
+      { caption: `${translations.svgFloor} ${floorNumber}` }
+    );
+    try {
+      await bot.deleteMessage(query.message!.chat.id, query.message!.message_id);
+    } catch (e) {
+      console.error('Failed to delete message:', e);
+    }
+    await bot.answerCallbackQuery(query.id);
   }
 });
 
