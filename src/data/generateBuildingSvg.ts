@@ -1,11 +1,7 @@
-import fs from 'fs';
-import translations from './translations.json';
+import translations from '../dictionary/translations.json';
 
 const language = (process.env.LANGUAGE as unknown as 'en' | 'ru') || 'en';
 const t = translations[language];
-
-// Load JSON data
-const buildingData = require('./building.json');
 
 // Configuration
 const floorBottomPadding = 30; // Extra space after apartments
@@ -17,7 +13,6 @@ const floorHeight = apartmentsOffsetY + (apartmentHeight * squareRows) + (rowGap
 const apartmentWidth = 140; // Width of each apartment
 const margin = 20; // Margin around the SVG
 const textOffset = 24; // Offset for text labels (увеличено для сдвига названия этажа ниже)
-const labelToApartmentOffset = 20; // Offset between label and apartment (increased)
 
 // Updated colors and styles
 const emptyColor = '#12343b'; // Night Blue Shadow для пустых квартир
@@ -62,12 +57,20 @@ const squareCols = 2;
 const floorsPerRow = 6; // Количество этажей в ряду
 
 // Generate SVG content
-export function generateSvg(data: any, singleFloorMode = false) {
-  const floors = Object.keys(data).sort((a, b) => Number(a) - Number(b));
-  const numRows = singleFloorMode ? 1 : Math.ceil(floors.length / floorsPerRow);
+export function generateSvg(
+  data: any,
+  options: { singleFloorMode: true; floorNumber: number } | { singleFloorMode: false }
+) {
+  let floors: string[];
+  if (options.singleFloorMode) {
+    floors = [options.floorNumber.toString()];
+  } else {
+    floors = Object.keys(data).sort((a, b) => Number(a) - Number(b));
+  }
+  const numRows = options.singleFloorMode ? 1 : Math.ceil(floors.length / floorsPerRow);
 
   // Если только один этаж — ширина только для одного этажа, иначе как раньше
-  const width = singleFloorMode
+  const width = options.singleFloorMode
     ? (squareCols * (apartmentWidth + 20) + 50) + margin
     : floorsPerRow * (squareCols * (apartmentWidth + 20) + 50) + margin;
   const height = numRows * floorHeight + 2 * margin;
@@ -83,7 +86,7 @@ export function generateSvg(data: any, singleFloorMode = false) {
     const apartmentKeys = Object.keys(apartments).sort((a, b) => Number(a) - Number(b));
 
     let row, col;
-    if (singleFloorMode) {
+    if (options.singleFloorMode) {
       row = 0;
       col = 0;
     } else {
@@ -126,8 +129,3 @@ export function generateSvg(data: any, singleFloorMode = false) {
   svg += '</svg>';
   return svg;
 }
-
-// Generate and save the SVG
-const svgContent = generateSvg(buildingData.schema);
-fs.writeFileSync('building.svg', svgContent);
-console.log('SVG generated: building.svg');

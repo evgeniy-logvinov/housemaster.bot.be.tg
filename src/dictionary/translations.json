@@ -23,6 +23,7 @@
     "removeResidentByName": "Remove Resident by Name",
     "cancel": "Cancel",
     "errorGeneratingImage": "Failed to generate building image. Please try again later.",
+    "errorLoadingBuilding": "Failed to load building data. Please try again later.",
     "addPhoneNumber": "Add Phone Number",
     "enterPhoneNumber": "Enter the phone number:",
     "phoneNumberAdded": "Phone number \"{phone}\" has been added to apartment {apartmentNumber} on floor {floor}.",
@@ -42,7 +43,10 @@
     "closeKeyboard": "Close Keyboard",
     "keyboardClosed": "Keyboard closed. See you later! To continue, type /start.",
     "enterFloorNumber": "Enter the floor number:",
-    "invalidFloorNumber": "Please enter a valid floor number."
+    "invalidFloorNumber": "Please enter a valid floor number.",
+    "privateCommandInstruction": "Please continue this command in a private chat with the bot @houseMasterRebekkaBot. Press /start.",
+    "privateCommandGroupHint": "To continue, go to a private chat with the bot @houseMasterRebekkaBot.",
+    "errorDeletingMessage": "Failed to delete message. Please try again later."
   },
   "ru": {
     "welcomeMessage": "Добро пожаловать! Я домовой. Используйте кнопки ниже для управления квартирами и жильцами.",
@@ -68,6 +72,7 @@
     "removeResidentByName": "Удалить жильца по имени",
     "cancel": "Отмена",
     "errorGeneratingImage": "Не удалось сгенерировать изображение здания. Попробуйте снова позже.",
+    "errorLoadingBuilding": "Не удалось загрузить данные о здании. Попробуйте снова позже.",
     "addPhoneNumber": "Добавить номер телефона",
     "enterPhoneNumber": "Введите номер телефона:",
     "phoneNumberAdded": "Номер телефона \"{phone}\" был добавлен в квартиру {apartmentNumber} на этаже {floor}.",
@@ -85,8 +90,11 @@
     "svgResidentFew": "жильца",
     "svgResidentMany": "жильцов",
     "closeKeyboard": "Закрыть клавиатуру",
-    "keyboardClosed": "Клавиатура закрыта. Домовой идет спать. Увидимся позже! Чтобы продолжить, введите /start или 'привет домовой'.",
+    "keyboardClosed": "Клавиатура закрыта. Домовой идет спать. Увидимся позже! Чтобы продолжить, введите /start, 'привет домовой', 'ребекка', 'бот'",
     "enterFloorNumber": "Введите номер этажа:",
-    "invalidFloorNumber": "Пожалуйста, введите корректный номер этажа."
+    "invalidFloorNumber": "Пожалуйста, введите корректный номер этажа.",
+    "privateCommandInstruction": "Пожалуйста, продолжите выполнение команды в личных сообщениях с ботом @houseMasterRebekkaBot. Нажмите /start.",
+    "privateCommandGroupHint": "Для продолжения работы перейдите в личные сообщения с ботом @houseMasterRebekkaBot.",
+    "errorDeletingMessage": "Не удалось удалить сообщение. Попробуйте снова позже."
   }
 }

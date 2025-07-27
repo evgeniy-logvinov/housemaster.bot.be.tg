@@ -1,4 +1,4 @@
-import translations from '../data/translations.json';
+import translations from '../dictionary/translations.json';
 
 const language = (process.env.LANGUAGE as unknown as 'en' | 'ru') || 'en'; // Default to English if LANGUAGE is not set
 const t = translations[language]; // Select translations based on the language
@@ -29,3 +29,20 @@ export const cancelKeyboard = {
     one_time_keyboard: true,
   },
 };
+
+const FLOOR_RANGE = {
+  min: parseInt(process.env.FLOOR_MIN || '2', 10),
+  max: parseInt(process.env.FLOOR_MAX || '23', 10),
+};
+
+export function getFloorInlineKeyboard() {
+  const buttons = [];
+  for (let i = FLOOR_RANGE.min; i <= FLOOR_RANGE.max; i++) {
+    buttons.push([{ text: i.toString(), callback_data: `floor_${i}` }]);
+  }
+  return {
+    reply_markup: {
+      inline_keyboard: buttons
+    }
+  };
+}

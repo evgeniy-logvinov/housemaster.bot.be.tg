@@ -1,17 +1,12 @@
 import TelegramBot from 'node-telegram-bot-api';
-import translationsData from '../data/translations.json';
-import { mainKeyboard, cancelKeyboard } from '../handlers/keyboard';
+import translationsData from '../dictionary/translations.json'; // Import translations
+import { mainKeyboard, cancelKeyboard, getFloorInlineKeyboard } from './keyboard';
 import { loadBuilding, saveBuilding } from '../data/buildingHelper';
 import { generateSvg } from '../data/generateBuildingSvg';
 import sharp from 'sharp';
-import path from 'path';
-import fs from 'fs';
-import crypto from 'crypto';
 
 const language = (process.env.LANGUAGE as unknown as 'en' | 'ru') || 'en';
 const translations = translationsData[language];
-
-const buildingImagePath = path.join(__dirname, '../data/building.png');
 
 type PendingReply = {
   step: string;
@@ -25,9 +20,6 @@ export const pendingReplies: { [key: string]: PendingReply } = {};
 function getPendingKey(chatId: number, userId: number) {
   return `${chatId}:${userId}`;
 }
-
-let cachedBuildingPng: Buffer | null = null;
-let cachedBuildingHash: string | null = null;
 
 // --- Common utilities ---
 
@@ -128,42 +120,6 @@ function askPhoneNumber(
 }
 
 // --- Main handlers ---
-
-function getBuildingVersion(building: any): number {
-  return building.version || 1;
-}
-
-async function getOrGenerateBuildingImage(building: any) {
-  const version = getBuildingVersion(building);
-  const svgPath = path.join(__dirname, `../data/building.v${version}.svg`);
-  const pngPath = path.join(__dirname, `../data/building.v${version}.png`);
-
-  // Если PNG уже есть — возвращаем его
-  if (fs.existsSync(pngPath)) {
-    return fs.readFileSync(pngPath);
-  }
-
-  // Генерируем SVG и PNG
-  const svgContent = generateSvg(building.schema);
-  fs.writeFileSync(svgPath, svgContent);
-  const pngBuffer = await sharp(Buffer.from(svgContent, 'utf-8')).png().toBuffer();
-  fs.writeFileSync(pngPath, pngBuffer);
-  return pngBuffer;
-}
-
-// async function regenerateBuildingImage(building: any) {
-//   const hash = crypto.createHash('md5').update(JSON.stringify(building)).digest('hex');
-//   if (cachedBuildingHash === hash && cachedBuildingPng) {
-//     return cachedBuildingPng;
-//   }
-//   const svgContent = generateSvg(building.schema);
-//   const svgBuffer = Buffer.from(svgContent, 'utf-8');
-//   const pngBuffer = await sharp(svgBuffer).png().toBuffer();
-//   cachedBuildingPng = pngBuffer;
-//   cachedBuildingHash = hash;
-//   return pngBuffer;
-// }
-
 export const handleAddMeAsResident = (bot: TelegramBot, msg: TelegramBot.Message) => {
   const building = loadBuilding();
 
@@ -483,7 +439,8 @@ export const handleRemovePhoneNumber = (bot: TelegramBot, msg: TelegramBot.Messa
 export const handleGenerateBuildingImage = async (bot: TelegramBot, msg: TelegramBot.Message) => {
   try {
     const building = loadBuilding();
-    const pngBuffer = await getOrGenerateBuildingImage(building);
+    const svgContent = generateSvg(building.schema, { singleFloorMode: false });
+    const pngBuffer = await sharp(Buffer.from(svgContent, 'utf-8')).png().toBuffer();
     await bot.sendPhoto(msg.chat.id, pngBuffer, { caption: 'Карта здания' });
   } catch (error) {
     bot.sendMessage(msg.chat.id, translations.errorGeneratingImage, mainKeyboard);
@@ -491,61 +448,9 @@ export const handleGenerateBuildingImage = async (bot: TelegramBot, msg: Telegra
 };
 
 export const handleGenerateFloorImage = (bot: TelegramBot, msg: TelegramBot.Message) => {
-  const building = loadBuilding();
-  const version = building.version || 1;
-  const askFloor = () => {
-    bot.sendMessage(msg.chat.id, translations.enterFloorNumber || "Введите номер этажа:", cancelKeyboard);
-
-    const listener = async (response: TelegramBot.Message) => {
-      if (response.text === translations.cancel) {
-        bot.sendMessage(msg.chat.id, translations.welcomeMessage, mainKeyboard);
-        return;
-      }
-      const floorNumber = response.text?.trim();
-      const floorKey = Number(floorNumber);
-      if (
-        !floorNumber ||
-        isNaN(floorKey) ||
-        !Object.prototype.hasOwnProperty.call(building.schema, floorKey)
-      ) {
-        bot.sendMessage(
-          msg.chat.id,
-          translations.invalidFloorNumber || "Некорректный номер этажа.",
-          cancelKeyboard
-        );
-        askFloor();
-        return;
-      }
-
-      // File paths with version and floor number
-      const svgPath = require('path').join(__dirname, `../data/building.v${version}.floor${floorKey}.svg`);
-      const pngPath = require('path').join(__dirname, `../data/building.v${version}.floor${floorKey}.png`);
-      const fs = require('fs');
-      const sharp = require('sharp');
-
-      let pngBuffer;
-      if (fs.existsSync(pngPath)) {
-        pngBuffer = fs.readFileSync(pngPath);
-      } else {
-        const floorData: any = { [floorKey]: building.schema[floorKey] };
-        const svgContent = generateSvg(floorData, true);
-        fs.writeFileSync(svgPath, svgContent);
-        pngBuffer = await sharp(Buffer.from(svgContent, 'utf-8')).png().toBuffer();
-        fs.writeFileSync(pngPath, pngBuffer);
-      }
-
-      await bot.sendPhoto(
-        msg.chat.id,
-        pngBuffer,
-        {
-          caption: `${translations.svgFloor} ${floorNumber}`,
-          ...mainKeyboard
-        }
-      );
-    };
-
-    bot.once('message', listener);
-  };
-
-  askFloor();
+  bot.sendMessage(
+    msg.chat.id,
+    translations.enterFloorNumber,
+    getFloorInlineKeyboard()
+  );
 };
