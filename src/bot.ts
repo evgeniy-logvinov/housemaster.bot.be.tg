@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import TelegramBot from 'node-telegram-bot-api';
-import { mainKeyboard } from './handlers/keyboard';
+import { getApartmentsByRangeKeyboard, mainKeyboard } from './handlers/keyboard';
 import translationsData from './dictionary/translations.json'; // Import translations
 import { handleAddMeAsResident, handleRemoveMeAsResident, handleAddResident, handleGetResidentsByApartment, handleRemoveResidentByName, handleAddPhoneNumber, handleRemovePhoneNumber, pendingReplies, handleGenerateBuildingImage, handleGenerateFloorImage } from './handlers/residents';
 import { generateSvg } from './data/generateBuildingSvg';
@@ -75,7 +75,6 @@ bot.on('message', (msg) => {
   const privateOnly = [
     translations.addMeAsResident,
     translations.removeMeAsResident,
-    translations.getResidentsByApartment,
     translations.addResident,
     translations.removeResidentByName,
     translations.addPhoneNumber,
@@ -109,6 +108,8 @@ bot.on('message', (msg) => {
   // Остальные команды — как раньше
   if (msg.text === translations.generateBuildingImage) {
     handleGenerateBuildingImage(bot, msg);
+  } else if (msg.text === translations.getResidentsByApartment) {
+    handleGetResidentsByApartment(bot, msg);
   } else if (msg.text === translations.generateFloorImage) {
     handleGenerateFloorImage(bot, msg);
   } else if (msg.text === translations.closeKeyboard) {
@@ -120,6 +121,54 @@ bot.on('message', (msg) => {
 
 bot.on('callback_query', async (query) => {
   const data = query.data || '';
+
+  if (data.startsWith('aptrange_')) {
+    const [, start, end] = data.split('_');
+    await bot.sendMessage(
+      query.message!.chat.id,
+      translations.chooseApartment,
+      getApartmentsByRangeKeyboard(Number(start), Number(end))
+    );
+    await bot.deleteMessage(query.message!.chat.id, query.message!.message_id);
+    await bot.answerCallbackQuery(query.id);
+    return;
+  }
+
+  if (data.startsWith('aptselect_')) {
+    const num = Number(data.replace('aptselect_', ''));
+    const building = loadBuilding();
+    let found = false;
+    let floor = '';
+    let flat;
+    for (const [floorKey, apartments] of Object.entries(building.schema)) {
+      if (apartments[num]) {
+        flat = apartments[num];
+        floor = floorKey;
+        found = true;
+        break;
+      }
+    }
+    let text;
+    if (found && flat) {
+      text = flat.residents && flat.residents.length
+        ? translations.residentsList
+            .replace('{apartmentNumber}', num.toString())
+            .replace('{floor}', floor)
+            .replace('{residents}', flat.residents.join(', '))
+        : translations.noResidents
+            .replace('{apartmentNumber}', num.toString())
+            .replace('{floor}', floor);
+    } else {
+      text = translations.apartmentNotFound
+        .replace('{apartmentNumber}', num.toString())
+        .replace('{floor}', 'unknown');
+    }
+    await bot.sendMessage(query.message!.chat.id, text);
+    await bot.deleteMessage(query.message!.chat.id, query.message!.message_id);
+    await bot.answerCallbackQuery(query.id);
+    return;
+  }
+
   if (data.startsWith('floor_')) {
     const floorNumber = Number(data.replace('floor_', ''));
     let building;
@@ -152,6 +201,34 @@ bot.on('callback_query', async (query) => {
       await bot.answerCallbackQuery(query.id, { text: translations.errorDeletingMessage });
     }
     await bot.answerCallbackQuery(query.id);
+  } else if (data.startsWith('apt_')) {
+    const [, floor, apt] = data.split('_');
+    const building = loadBuilding();
+    const schema: Record<string, Record<string, { residents: string[] }>> = building.schema;
+    const flat = schema[floor]?.[apt];
+    let text;
+    if (flat) {
+      text = flat.residents.length
+        ? translations.residentsList
+            .replace('{apartmentNumber}', apt)
+            .replace('{floor}', floor)
+            .replace('{residents}', flat.residents.join(', '))
+        : translations.noResidents
+            .replace('{apartmentNumber}', apt)
+            .replace('{floor}', floor);
+    } else {
+      text = translations.apartmentNotFound
+        .replace('{apartmentNumber}', apt)
+        .replace('{floor}', floor);
+    }
+    await bot.sendMessage(query.message!.chat.id, text);
+    try {
+      await bot.deleteMessage(query.message!.chat.id, query.message!.message_id);
+    } catch (e) {
+      logger.warn(`Не удалось удалить сообщение с инлайн-клавиатурой: ${e}`);
+    }
+    await bot.answerCallbackQuery(query.id);
+    return;
   }
 });
 

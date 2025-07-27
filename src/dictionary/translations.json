@@ -46,7 +46,8 @@
     "invalidFloorNumber": "Please enter a valid floor number.",
     "privateCommandInstruction": "Please continue this command in a private chat with the bot @houseMasterRebekkaBot. Press /start.",
     "privateCommandGroupHint": "To continue, go to a private chat with the bot @houseMasterRebekkaBot.",
-    "errorDeletingMessage": "Failed to delete message. Please try again later."
+    "errorDeletingMessage": "Failed to delete message. Please try again later.",
+    "chooseApartment": "Выберите квартиру:"
   },
   "ru": {
     "welcomeMessage": "Добро пожаловать! Я домовой. Используйте кнопки ниже для управления квартирами и жителями.",
@@ -60,7 +61,7 @@
     "residentsList": "Жители квартиры {apartmentNumber} на этаже {floor}: {residents}",
     "enterResidentName": "Введите имя жителя:",
     "residentAdded": "Житель \"{residentName}\" был добавлен в квартиру {apartmentNumber} на этаже {floor}.",
-    "apartmentNotFound": "Квартира с номером {apartmentNumber} на этаже {floor} не найдена.",
+    "apartmentNotFound": "Квартира {apartmentNumber} на этаже {floor} не найдена.",
     "invalidName": "Неверное имя. Пожалуйста, попробуйте снова.",
     "apartmentAlreadyExists": "Квартира с номером {apartmentNumber} на этаже {floor} уже существует.",
     "apartmentAdded": "Квартира с номером {apartmentNumber} на этаже {floor} успешно добавлена!",
@@ -95,6 +96,7 @@
     "invalidFloorNumber": "Пожалуйста, введите корректный номер этажа.",
     "privateCommandInstruction": "Пожалуйста, продолжите выполнение команды в личных сообщениях с ботом @houseMasterRebekkaBot. Нажмите /start.",
     "privateCommandGroupHint": "Для продолжения работы перейдите в личные сообщения с ботом @houseMasterRebekkaBot.",
-    "errorDeletingMessage": "Не удалось удалить сообщение. Попробуйте снова позже."
+    "errorDeletingMessage": "Не удалось удалить сообщение. Попробуйте снова позже.",
+    "chooseApartment": "Выберите квартиру:"
   }
 }

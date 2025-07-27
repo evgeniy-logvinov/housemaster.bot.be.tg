@@ -1,4 +1,5 @@
 import translations from '../dictionary/translations.json';
+import { loadBuilding } from '../data/buildingHelper';
 
 const language = (process.env.LANGUAGE as unknown as 'en' | 'ru') || 'en'; // Default to English if LANGUAGE is not set
 const t = translations[language]; // Select translations based on the language
@@ -36,13 +37,86 @@ const FLOOR_RANGE = {
 };
 
 export function getFloorInlineKeyboard() {
-  const buttons = [];
+  const buttons: { text: string; callback_data: string }[] = [];
   for (let i = FLOOR_RANGE.min; i <= FLOOR_RANGE.max; i++) {
-    buttons.push([{ text: i.toString(), callback_data: `floor_${i}` }]);
+    buttons.push({ text: i.toString(), callback_data: `floor_${i}` });
   }
+
+  const inline_keyboard: { text: string; callback_data: string }[][] = [];
+  for (let i = 0; i < buttons.length; i += 5) {
+    inline_keyboard.push(buttons.slice(i, i + 5));
+  }
+
   return {
     reply_markup: {
-      inline_keyboard: buttons
+      inline_keyboard
+    }
+  };
+}
+
+export function getApartmentInlineKeyboard() {
+  const building = loadBuilding();
+  const schema: Record<string, Record<string, any>> = building.schema;
+  const buttons: { text: string; callback_data: string }[] = [];
+
+  for (const floor of Object.keys(schema).sort((a, b) => Number(a) - Number(b))) {
+    for (const apt of Object.keys(schema[floor]).sort((a, b) => Number(a) - Number(b))) {
+      buttons.push({
+        text: `${floor}-${apt}`,
+        callback_data: `apt_${floor}_${apt}`
+      });
+    }
+  }
+
+  const inline_keyboard: { text: string; callback_data: string }[][] = [];
+  for (let i = 0; i < buttons.length; i += 6) {
+    inline_keyboard.push(buttons.slice(i, i + 6));
+  }
+
+  return {
+    reply_markup: {
+      inline_keyboard
+    }
+  };
+}
+
+export function getApartmentRangeKeyboard() {
+  return {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: 'Квартиры 1–61', callback_data: 'aptrange_1_61' }],
+        [{ text: 'Квартиры 62–132', callback_data: 'aptrange_62_132' }]
+      ]
+    }
+  };
+}
+
+export function getApartmentsByRangeKeyboard(start: number, end: number) {
+  const building = loadBuilding();
+  const schema: Record<string, Record<string, any>> = building.schema;
+  const buttons: { text: string; callback_data: string }[] = [];
+
+  for (let num = start; num <= end; num++) {
+    // Найти этаж и квартиру по номеру
+    for (const floor of Object.keys(schema)) {
+      if (schema[floor][num]) {
+        buttons.push({
+          text: `${num}`,
+          callback_data: `aptselect_${num}`
+        });
+        break;
+      }
+    }
+  }
+
+  const inline_keyboard: { text: string; callback_data: string }[][] = [];
+  for (let i = 0; i < buttons.length; i += 6) {
+    inline_keyboard.push(buttons.slice(i, i + 6));
+  }
+
+  return {
+    reply_markup: {
+      inline_keyboard
     }
   };
 }

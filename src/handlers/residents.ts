@@ -1,6 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
 import translationsData from '../dictionary/translations.json'; // Import translations
-import { mainKeyboard, cancelKeyboard, getFloorInlineKeyboard } from './keyboard';
+import { mainKeyboard, cancelKeyboard, getFloorInlineKeyboard, getApartmentInlineKeyboard, getApartmentRangeKeyboard } from './keyboard';
 import { loadBuilding, saveBuilding } from '../data/buildingHelper';
 import { generateSvg } from '../data/generateBuildingSvg';
 import sharp from 'sharp';
@@ -293,46 +293,11 @@ export const handleAddPhoneNumber = (bot: TelegramBot, msg: TelegramBot.Message)
 };
 
 export const handleGetResidentsByApartment = (bot: TelegramBot, msg: TelegramBot.Message) => {
-  const building = loadBuilding();
-  askApartmentNumber(bot, msg, (apartmentNumber) => {
-    try {
-      let residents: string[] = [];
-      let numbers: string[] = [];
-      let floor: string | undefined;
-
-      for (const [floorKey, apartments] of Object.entries(building.schema)) {
-        const flat = apartments[apartmentNumber];
-        if (flat) {
-          residents = flat.residents;
-          numbers = flat.numbers;
-          floor = floorKey;
-          break;
-        }
-      }
-
-      if (floor) {
-        bot.sendMessage(
-          msg.chat.id,
-          `${translations.residentsList
-            .replace('{apartmentNumber}', apartmentNumber.toString())
-            .replace('{floor}', floor)
-            .replace('{residents}', residents.length ? residents.join(', ') : '—')}
-\nPhone numbers: ${numbers.length ? numbers.join(', ') : '—'}`,
-          mainKeyboard
-        );
-      } else {
-        bot.sendMessage(
-          msg.chat.id,
-          translations.apartmentNotFound
-            .replace('{apartmentNumber}', apartmentNumber.toString())
-            .replace('{floor}', 'unknown'),
-          mainKeyboard
-        );
-      }
-    } catch (error) {
-      bot.sendMessage(msg.chat.id, translations.apartmentNotFound.replace('{apartmentNumber}', apartmentNumber.toString()), mainKeyboard);
-    }
-  });
+  bot.sendMessage(
+    msg.chat.id,
+    translations.chooseApartment,
+    getApartmentRangeKeyboard()
+  );
 };
 
 export const handleRemoveResidentByName = (bot: TelegramBot, msg: TelegramBot.Message) => {
