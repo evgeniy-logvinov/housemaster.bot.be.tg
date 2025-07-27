@@ -57,13 +57,13 @@ const squareCols = 2;
 const floorsPerRow = 6; // Количество этажей в ряду
 
 // Generate SVG content
-export function generateSvg(data: any, singleFloorMode = false, floorNumber?: number) {
-  if (singleFloorMode && floorNumber === undefined) {
-    throw new Error("floorNumber must be defined when singleFloorMode is true.");
-  }
+export function generateSvg(
+  data: any,
+  options: { singleFloorMode: true; floorNumber: number } | { singleFloorMode: false }
+) {
   let floors: string[];
-  if (singleFloorMode && floorNumber !== undefined) {
-    floors = [floorNumber.toString()];
+  if (options.singleFloorMode) {
+    floors = [options.floorNumber.toString()];
   } else {
     floors = Object.keys(data).sort((a, b) => Number(a) - Number(b));
   }
