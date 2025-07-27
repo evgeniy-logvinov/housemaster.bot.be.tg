@@ -45,7 +45,8 @@
     "enterFloorNumber": "Enter the floor number:",
     "invalidFloorNumber": "Please enter a valid floor number.",
     "privateCommandInstruction": "Please continue this command in a private chat with the bot @houseMasterRebekkaBot. Press /start.",
-    "privateCommandGroupHint": "To continue, go to a private chat with the bot @houseMasterRebekkaBot."
+    "privateCommandGroupHint": "To continue, go to a private chat with the bot @houseMasterRebekkaBot.",
+    "errorDeletingMessage": "Failed to delete message. Please try again later."
   },
   "ru": {
     "welcomeMessage": "Добро пожаловать! Я домовой. Используйте кнопки ниже для управления квартирами и жильцами.",
@@ -93,6 +94,7 @@
     "enterFloorNumber": "Введите номер этажа:",
     "invalidFloorNumber": "Пожалуйста, введите корректный номер этажа.",
     "privateCommandInstruction": "Пожалуйста, продолжите выполнение команды в личных сообщениях с ботом @houseMasterRebekkaBot. Нажмите /start.",
-    "privateCommandGroupHint": "Для продолжения работы перейдите в личные сообщения с ботом @houseMasterRebekkaBot."
+    "privateCommandGroupHint": "Для продолжения работы перейдите в личные сообщения с ботом @houseMasterRebekkaBot.",
+    "errorDeletingMessage": "Не удалось удалить сообщение. Попробуйте снова позже."
   }
 }
