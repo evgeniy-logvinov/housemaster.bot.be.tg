@@ -8,6 +8,7 @@ import translationsData from './dictionary/translations.json'; // Import transla
 import { handleAddMeAsResident, handleRemoveMeAsResident, handleAddResident, handleGetResidentsByApartment, handleRemoveResidentByName, handleAddPhoneNumber, handleRemovePhoneNumber, pendingReplies, handleGenerateBuildingImage, handleGenerateFloorImage } from './handlers/residents';
 import { generateSvg } from './data/generateBuildingSvg';
 import sharp from 'sharp';
+import logger from './logger';
 
 // Load environment variables
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -24,18 +25,18 @@ if (!translationsData[language]) {
 }
 
 const translations = translationsData[language]; // Select translations based on the language
-console.log('Selected language:', language);
-console.log('Debug mode:', debug);
+logger.info(`Selected language: ${language}`);
+logger.info(`Debug mode: ${debug}`);
 
 if (debug) {
-  console.log('Translations:', translations);
+  logger.debug(`Translations: ${JSON.stringify(translations)}`);
 }
 
 // Initialize bot
 const bot = new TelegramBot(token, { polling: true });
 
 // Send a welcome message with the main keyboard when the bot starts
-bot.onText(/\/start|привет ?домовой/i, (msg) => {
+bot.onText(/\/start|ребекка|бот|привет ?домовой/i, (msg) => {
   const chatId = msg.chat.id;
   bot.sendMessage(chatId, translations.welcomeMessage, mainKeyboard);
 });
@@ -59,7 +60,7 @@ function redirectToPrivate(bot: TelegramBot, msg: TelegramBot.Message) {
 
 // Command handlers
 bot.on('message', (msg) => {
-  console.log('Received message:', msg.text, 'from:', msg.from?.username, 'chat:', msg.chat.id);
+  logger.info(`Received message: ${msg.text} from: ${msg.from?.username} chat: ${msg.chat.id}`);
 
   if (msg.from && pendingReplies) {
     const key = `${msg.chat.id}:${msg.from.id}`;
@@ -131,10 +132,10 @@ bot.on('callback_query', async (query) => {
     try {
       await bot.deleteMessage(query.message!.chat.id, query.message!.message_id);
     } catch (e) {
-      console.error('Failed to delete message:', e);
+      logger.error(`Failed to delete message: ${e}`);
     }
     await bot.answerCallbackQuery(query.id);
   }
 });
 
-console.log('Bot is running!');
+logger.info('Bot is running!');

@@ -1,3 +1,4 @@
+import logger from '../logger';
 import fs from 'fs';
 import https from 'https';
 
@@ -5,7 +6,7 @@ const YANDEX_DISK_TOKEN = process.env.YANDEX_DISK_TOKEN;
 
 export async function uploadToYandexDisk(localPath: string, remotePath: string) {
   if (!YANDEX_DISK_TOKEN) {
-    console.log('Yandex Disk upload skipped: token not set');
+    logger.warn('Yandex Disk upload skipped: token not set');
     return;
   }
 
@@ -30,20 +31,20 @@ export async function uploadToYandexDisk(localPath: string, remotePath: string) 
 
     const req = https.request(options, (res) => {
       if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-        console.log(`Uploaded to Yandex.Disk: ${remotePath}`);
+        logger.info(`Uploaded to Yandex.Disk: ${remotePath}`);
         resolve(true);
       } else {
         let data = '';
         res.on('data', (chunk) => { data += chunk; });
         res.on('end', () => {
-          console.error('Yandex Disk upload error:', res.statusCode, data);
+          logger.error(`Yandex Disk upload error: ${res.statusCode} ${data}`);
           reject(new Error(`Upload failed: ${res.statusCode} ${data}`));
         });
       }
     });
 
     req.on('error', (err) => {
-      console.error('Yandex Disk upload error:', err);
+      logger.error(`Yandex Disk upload error: ${err}`);
       reject(err);
     });
 
@@ -55,6 +56,7 @@ export async function uploadToYandexDisk(localPath: string, remotePath: string) 
 async function getUploadUrl(remotePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!YANDEX_DISK_TOKEN) {
+      logger.warn('YANDEX_DISK_TOKEN not set');
       reject(new Error('YANDEX_DISK_TOKEN not set'));
       return;
     }
@@ -78,15 +80,18 @@ async function getUploadUrl(remotePath: string): Promise<string> {
             const json = JSON.parse(data);
             resolve(json.href);
           } catch (e) {
+            logger.error('Failed to parse upload URL response');
             reject(new Error('Failed to parse upload URL response'));
           }
         } else {
+          logger.error(`Failed to get upload URL: ${res.statusCode} ${data}`);
           reject(new Error(`Failed to get upload URL: ${res.statusCode} ${data}`));
         }
       });
     });
 
     req.on('error', (err) => {
+      logger.error(`Failed to get upload URL: ${err}`);
       reject(err);
     });
 

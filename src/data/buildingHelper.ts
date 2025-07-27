@@ -8,6 +8,7 @@ import translationsData from '../dictionary/translations.json';
 import { mainKeyboard } from '../handlers/keyboard';
 import TelegramBot from 'node-telegram-bot-api';
 import { uploadToYandexDisk } from '../backup/yandex';
+import logger from '../logger';
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ const language = (process.env.LANGUAGE as unknown as 'en' | 'ru') || 'en';
 const translations = translationsData[language];
 
 const buildingFilePath = path.join(__dirname, 'building.json');
+const yandexDiskFolder = process.env.YANDEX_DISK_FOLDER || '/housemaster';
 
 // Load building data from JSON file
 export const loadBuilding = (): Building => {
@@ -30,10 +32,10 @@ export const saveBuilding = async (building: Building) => {
   building.version = (building.version || 1) + 1;
   fs.writeFileSync(buildingFilePath, JSON.stringify(building, null, 2), 'utf-8');
   // Upload to Yandex Disk and don't wait for completion
-  const remotePath = `/housemaster/building.v${building.version}.json`;
+  const remotePath = `${yandexDiskFolder}/building.v${building.version}.json`;
   uploadToYandexDisk(buildingFilePath, remotePath)
-    .then(() => console.log('building.json uploaded to Yandex Disk'))
-    .catch((err) => console.error('Failed to upload building.json:', err));
+    .then(() => logger.info('building.json uploaded to Yandex Disk'))
+    .catch((err) => logger.error('Failed to upload building.json:', err));
   // Here you can immediately return/respond to the user
 };
 

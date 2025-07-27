@@ -9,6 +9,7 @@ House master telegram bot made using copilot(for testing purpose)
 TELEGRAM_BOT_TOKEN=
 LANGUAGE=ru/en
 YANDEX_DISK_TOKEN=
+YANDEX_DISK_FOLDER=/folderName
 ```
 
 Yandex token to save file on disk rach time when we update version
