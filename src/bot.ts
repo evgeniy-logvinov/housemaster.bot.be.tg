@@ -122,6 +122,13 @@ bot.on('callback_query', async (query) => {
   const data = query.data || '';
   if (data.startsWith('floor_')) {
     const floorNumber = Number(data.replace('floor_', ''));
+    
+    if (isNaN(floorNumber) || !Number.isInteger(floorNumber)) {
+      logger.error(`Invalid floor number: ${data}`);
+      await bot.answerCallbackQuery(query.id, { text: translations.invalidFloorNumber });
+      return;
+    }
+    
     let building;
     
     try {
