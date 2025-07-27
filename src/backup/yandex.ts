@@ -14,7 +14,7 @@ export async function uploadToYandexDisk(localPath: string, remotePath: string) 
   try {
     fileBuffer = fs.readFileSync(localPath);
   } catch (err) {
-    logger.error(`Failed to read file at ${localPath}: ${err instanceof Error ? err.message : String(err)}`);
+    logger.error(`Failed to read file at ${localPath}: ${extractErrorMessage(err)}`);
     return;
   }
 
