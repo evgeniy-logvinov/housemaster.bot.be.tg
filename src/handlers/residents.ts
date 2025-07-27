@@ -439,7 +439,7 @@ export const handleRemovePhoneNumber = (bot: TelegramBot, msg: TelegramBot.Messa
 export const handleGenerateBuildingImage = async (bot: TelegramBot, msg: TelegramBot.Message) => {
   try {
     const building = loadBuilding();
-    const svgContent = generateSvg(building.schema);
+    const svgContent = generateSvg(building.schema, { singleFloorMode: false });
     const pngBuffer = await sharp(Buffer.from(svgContent, 'utf-8')).png().toBuffer();
     await bot.sendPhoto(msg.chat.id, pngBuffer, { caption: 'Карта здания' });
   } catch (error) {

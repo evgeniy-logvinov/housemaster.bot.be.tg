@@ -67,10 +67,10 @@ export function generateSvg(
   } else {
     floors = Object.keys(data).sort((a, b) => Number(a) - Number(b));
   }
-  const numRows = singleFloorMode ? 1 : Math.ceil(floors.length / floorsPerRow);
+  const numRows = options.singleFloorMode ? 1 : Math.ceil(floors.length / floorsPerRow);
 
   // Если только один этаж — ширина только для одного этажа, иначе как раньше
-  const width = singleFloorMode
+  const width = options.singleFloorMode
     ? (squareCols * (apartmentWidth + 20) + 50) + margin
     : floorsPerRow * (squareCols * (apartmentWidth + 20) + 50) + margin;
   const height = numRows * floorHeight + 2 * margin;
@@ -86,7 +86,7 @@ export function generateSvg(
     const apartmentKeys = Object.keys(apartments).sort((a, b) => Number(a) - Number(b));
 
     let row, col;
-    if (singleFloorMode) {
+    if (options.singleFloorMode) {
       row = 0;
       col = 0;
     } else {

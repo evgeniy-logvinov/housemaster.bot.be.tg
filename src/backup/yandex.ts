@@ -104,3 +104,20 @@ async function getUploadUrl(remotePath: string): Promise<string> {
     req.end();
   });
 }
+
+function extractErrorMessage(err: unknown): string {
+  if (err instanceof Error) {
+    return err.message;
+  }
+  if (typeof err === 'string') {
+    return err;
+  }
+  if (typeof err === 'object' && err !== null && 'message' in err && typeof (err as any).message === 'string') {
+    return (err as any).message;
+  }
+  try {
+    return JSON.stringify(err);
+  } catch {
+    return String(err);
+  }
+}

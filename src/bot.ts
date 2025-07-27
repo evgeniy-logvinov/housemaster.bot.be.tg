@@ -122,13 +122,6 @@ bot.on('callback_query', async (query) => {
   const data = query.data || '';
   if (data.startsWith('floor_')) {
     const floorNumber = Number(data.replace('floor_', ''));
-    
-    if (isNaN(floorNumber) || !Number.isInteger(floorNumber)) {
-      logger.error(`Invalid floor number: ${data}`);
-      await bot.answerCallbackQuery(query.id, { text: translations.invalidFloorNumber });
-      return;
-    }
-    
     let building;
     
     try {
@@ -138,8 +131,8 @@ bot.on('callback_query', async (query) => {
       await bot.answerCallbackQuery(query.id, { text: translations.errorLoadingBuilding });
       return;
     }
-    
-    const svgContent = generateSvg(building.schema, true, floorNumber);
+
+    const svgContent = generateSvg(building.schema, { singleFloorMode: true, floorNumber });
     const pngBuffer = await sharp(Buffer.from(svgContent, 'utf-8')).png().toBuffer();
     await bot.sendPhoto(
       query.message!.chat.id,
